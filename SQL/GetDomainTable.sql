@@ -1,6 +1,12 @@
+-- INSTRUCTIONS
+-- ============
+
 -- Execute the CREATE FUNCTION statement below to create the function
--- in your SQL Server. Once created, you can invoke it via a call like 
--- SELECT dbo.GetDomainTable('https://www.google.com/mail')
+-- in your SQL Server. Once created, you can invoke it via a call like
+-- the following. This function returns a table so the return value 
+-- must be treated as such.
+
+-- 1. SELECT dbo.GetDomainTable('https://www.google.com/mail')
 
 CREATE FUNCTION dbo.GetDomainTable(@url VARCHAR(1024))
 RETURNS @result TABLE 
@@ -42,6 +48,8 @@ BEGIN
 END
 
 -- TESTS
+-- =====
+
 -- SELECT * from dbo.GetDomainTable('https://www.google.com/hello')
 -- UNION 
 -- SELECT * from dbo.GetDomainTable('https://help.dotalign.com/article/5wwii9q2b4-migrating-from-adal-to-msal')
