@@ -8,11 +8,11 @@
 -- 1. SELECT dbo.GetDomain('https://www.maps.google.com/directions', 0 /* stripSubDomains */)
 -- 2. UPDATE Companies SET CleanDomain = dbo.GetDomain(CompanyUrl, 1 /* stripSubDomains */) 
 
-CREATE FUNCTION dbo.GetDomain(@url VARCHAR(1000), @stripSubDomains BIT = 1)
+CREATE FUNCTION dbo.GetDomain(@url VARCHAR(1024), @stripSubDomains BIT = 1)
 RETURNS VARCHAR(512)
 AS
 BEGIN
-	DECLARE @hostName VARCHAR(1000)
+	DECLARE @hostName VARCHAR(1024)
 	SET @hostName = @url
 
 	-- Replace some standard prefixes
