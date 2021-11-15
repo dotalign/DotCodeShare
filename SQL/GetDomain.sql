@@ -1,6 +1,12 @@
+-- INSTRUCTIONS 
+-- ============
+
 -- Execute the CREATE FUNCTION statement below to create the function
--- in your SQL Server. Once created, you can invoke it via a call like 
--- SELECT dbo.GetDomain('https://www.google.com/mail', 1)
+-- in your SQL Server. Once created, you can invoke it via a call like
+-- the following:
+
+-- 1. SELECT dbo.GetDomain('https://www.google.com/mail', 1)
+-- 2. UPDATE Companies SET CleanDomain = dbo.GetDomain(CompanyUrl, 1 /* stripSubDomains */) 
 
 CREATE FUNCTION dbo.GetDomain(@url VARCHAR(1000), @stripSubDomains BIT = 1)
 RETURNS VARCHAR(512)
