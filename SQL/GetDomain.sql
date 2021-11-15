@@ -1,9 +1,9 @@
-CREATE FUNCTION dbo.GetDomain(@url varchar(1000), @stripSubDomains bit)
-RETURNS varchar(512)
+CREATE FUNCTION dbo.GetDomain(@url VARCHAR(1000), @stripSubDomains BIT = 1)
+RETURNS VARCHAR(512)
 AS
 BEGIN
-	DECLARE @hostName varchar(1000)
-	set @hostName = @url
+	DECLARE @hostName VARCHAR(1000)
+	SET @hostName = @url
 
 	-- Replace some standard prefixes
 	SELECT @hostName = REPLACE(@hostName, 'https://', '')
@@ -31,3 +31,19 @@ BEGIN
 
 	RETURN @hostName
 END
+
+-- TEST
+--Select 
+--	dbo.GetDomain('https://www.google.com/mail', 1),
+--	dbo.GetDomain('https://help.dotalign.com/article/5wwii9q2b4-migrating-from-adal-to-msal', 1),
+--	dbo.GetDomain('https://dotalign--c.documentforce.com/secur/contentDoor?startURL=https%3A%2F%2FdskipRedirect=1&lm=eyJlbmMiOiJBMjU2R0NNIijowfQ%3D%3D..TbgpNG20jF_KWTa6.Gx5Rjlh9cad9mgX0UQWYVw%3D%3D.bWYNdVsK1zeqCEd-8c8sOg%3D%3D', 1),
+--	dbo.GetDomain('https://post.in/instructions', 1),
+--	dbo.GetDomain('https://julio.co.uk', 1),
+--	dbo.GetDomain('https://us.tradeshow.com', 1),
+--	dbo.GetDomain('http://help.dotalign.com/article/5wwii9q2b4-migrating-from-adal-to-msal', 1),
+--	dbo.GetDomain('http://dotalign--c.documentforce.com/secur/contentDoor?startURL=https%3A%2F%2FdskipRedirect=1&lm=eyJlbmMiOiJBMjU2R0NNIijowfQ%3D%3D..TbgpNG20jF_KWTa6.Gx5Rjlh9cad9mgX0UQWYVw%3D%3D.bWYNdVsK1zeqCEd-8c8sOg%3D%3D', 1),
+--	dbo.GetDomain('http://post.in/instructions', 1),
+--	dbo.GetDomain('http://julio.co.uk', 1),
+--	dbo.GetDomain('http://us.tradeshow.com', 1),
+--	dbo.GetDomain('https://dotalign.com.au/#team', 1),
+--	dbo.GetDomain('http://dotalign.com.in/contact-us', 1)
