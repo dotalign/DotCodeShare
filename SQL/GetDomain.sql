@@ -5,7 +5,7 @@
 -- in your SQL Server. Once created, you can invoke it via a call like
 -- the following:
 
--- 1. SELECT dbo.GetDomain('https://www.google.com/mail', 1)
+-- 1. SELECT dbo.GetDomain('https://www.maps.google.com/directions', 0 /* stripSubDomains */)
 -- 2. UPDATE Companies SET CleanDomain = dbo.GetDomain(CompanyUrl, 1 /* stripSubDomains */) 
 
 CREATE FUNCTION dbo.GetDomain(@url VARCHAR(1000), @stripSubDomains BIT = 1)
@@ -42,7 +42,8 @@ BEGIN
 	RETURN @hostName
 END
 
--- TESTS 
+-- TESTS
+-- =====
 
 -- SELECT  
 --	dbo.GetDomain('https://www.google.com/mail', 1),
