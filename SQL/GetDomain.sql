@@ -2,7 +2,7 @@
 -- ============
 
 -- Execute the CREATE FUNCTION statement below to create the function
--- in your SQL Server. Once created, you can invoke it via a call like
+-- in your SQL Server. Once created, you can invoke it via calls like
 -- the following:
 
 -- 1. SELECT dbo.GetDomain('https://www.maps.google.com/directions', 0 /* stripSubDomains */)
