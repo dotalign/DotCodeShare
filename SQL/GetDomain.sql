@@ -1,3 +1,7 @@
+-- Execute the CREATE FUNCTION statement below to create the function
+-- in your SQL Server. Once created, you can invoke it via a call like 
+-- SELECT dbo.GetDomain('https://www.google.com/mail', 1)
+
 CREATE FUNCTION dbo.GetDomain(@url VARCHAR(1000), @stripSubDomains BIT = 1)
 RETURNS VARCHAR(512)
 AS
@@ -33,7 +37,7 @@ BEGIN
 END
 
 -- TEST
---Select 
+--SELECT 
 --	dbo.GetDomain('https://www.google.com/mail', 1),
 --	dbo.GetDomain('https://help.dotalign.com/article/5wwii9q2b4-migrating-from-adal-to-msal', 1),
 --	dbo.GetDomain('https://dotalign--c.documentforce.com/secur/contentDoor?startURL=https%3A%2F%2FdskipRedirect=1&lm=eyJlbmMiOiJBMjU2R0NNIijowfQ%3D%3D..TbgpNG20jF_KWTa6.Gx5Rjlh9cad9mgX0UQWYVw%3D%3D.bWYNdVsK1zeqCEd-8c8sOg%3D%3D', 1),
