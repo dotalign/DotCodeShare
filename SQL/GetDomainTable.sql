@@ -12,7 +12,7 @@ CREATE FUNCTION dbo.GetDomainTable(@url VARCHAR(1024))
 RETURNS @result TABLE 
 (
     hostName VARCHAR(512),
-	hostNameWithSubdomains VARCHAR(512),
+    hostNameWithSubdomains VARCHAR(512),
     fulUrl VARCHAR(1024)
 )
 AS
