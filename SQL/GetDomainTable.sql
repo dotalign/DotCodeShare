@@ -13,7 +13,7 @@ RETURNS @result TABLE
 (
     hostName VARCHAR(512),
     hostNameWithSubdomains VARCHAR(512),
-    fulUrl VARCHAR(1024)
+    originalUrl VARCHAR(1024)
 )
 AS
 BEGIN
