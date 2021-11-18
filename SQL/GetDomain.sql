@@ -52,13 +52,9 @@ BEGIN
 
 		-- If the second level domain exists in the list
 		IF EXISTS (SELECT * FROM @secondLevelDomains WHERE DomainName = @sld)
-		BEGIN
 			SELECT @hostName = PARSENAME(@hostName, 3) + '.' + PARSENAME(@hostName, 2) + '.' + PARSENAME(@hostName, 1)				
-		END
 		ELSE
-		BEGIN
 			SELECT @hostName = PARSENAME(@hostName, 2) + '.' + PARSENAME(@hostName, 1)
-		END
 	END
 
 	RETURN @hostName
