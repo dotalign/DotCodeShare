@@ -15,7 +15,7 @@ SET @contactEmail = 'hswartz@hl.com';
   WHERE coll.email_address = @bkrEmail
 )
 SELECT
-        COUNT(m.start_date) AS MeetingCount,  -- can't use meeting_id because each banker has their own key for it
+        COUNT(DISTINCT m.start_date) AS MeetingCount,  -- can't use meeting_id because each banker has their own key for it
         MAX(m.start_date) AS LastMeeting,
         MIN(m.start_date) AS FirstMeeting
 FROM da.meeting m
