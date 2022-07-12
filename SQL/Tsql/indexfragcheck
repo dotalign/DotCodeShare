@@ -11,13 +11,13 @@ SET @tableObjectId = (
 SELECT  si.name AS IndexName,
         ips.index_id AS IndexNumber,
         ips.avg_fragmentation_in_percent AS AvgFragmentationPercent
---        ,ips.Index_type_desc, 
---        ips.avg_fragment_size_in_pages, 
---        ips.avg_page_space_used_in_percent, 
---        ips.record_count, 
---        ips.ghost_record_count,
---        ips.fragment_count, 
---        ips.avg_fragment_size_in_pages
+        ,ips.Index_type_desc, 
+        ips.avg_fragment_size_in_pages, 
+        ips.avg_page_space_used_in_percent, 
+        ips.record_count, 
+        ips.ghost_record_count,
+        ips.fragment_count, 
+        ips.avg_fragment_size_in_pages
 FROM sys.dm_db_index_physical_stats( db_id(), @tableObjectId, NULL, NULL, 'LIMITED') ips
 JOIN sys.indexes si ON si.index_id = ips.index_id
 WHERE si.object_id = @tableObjectId;
