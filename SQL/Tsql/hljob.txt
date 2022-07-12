@@ -99,8 +99,8 @@ LikelyNotCurrentAsOf,
 LikelyPartTime
 )
 SELECT DISTINCT
-( 21 /* SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/' */ ) AS NamedGraphId /* http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/ */, 
-( 87 /* SELECT Id FROM EntityDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/' */ ) AS EntityDefinitionId /* PersonJob */, 
+( SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/' ) AS NamedGraphId /* http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/ */, 
+( SELECT Id FROM EntityDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/' ) AS EntityDefinitionId /* PersonJob */, 
 CAST(NULL as int) AS DestinationRootId, 
 x_personmd5_concord.AnchorLowMd5 AS PersonMd5 /* UX */, 
 x_companymd5_concord.AnchorLowMd5 AS CompanyMd5 /* UX */, 
