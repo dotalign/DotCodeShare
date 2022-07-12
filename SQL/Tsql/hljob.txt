@@ -1,0 +1,207 @@
+/*
+CREATE INDEX IX_TEST_PersonJobValueFixedBinary16 ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 (PropertyDefinitionId, Value) INCLUDE (GraphedEntityRootId);
+CREATE INDEX IX_TEST_PersonJobValueRefdEntity ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueRefdEntity (PropertyDefinitionId, RefdSubjectMd5) INCLUDE (GraphedEntityRootId);
+CREATE INDEX IX_TEST_PersonJobValueDateTime ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime (PropertyDefinitionId, Value) INCLUDE (GraphedEntityRootId);
+CREATE INDEX IX_TEST_PersonJobRoot_NamedGraphId_Include ON internal_dot_dotalign_dot_com_teams_2.PersonJobRoot (NamedGraphId) INCLUDE (EntityDefinitionId, Id);
+*/
+
+/*
+DROP INDEX IX_TEST_PersonJobValueFixedBinary16 ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16;
+DROP INDEX IX_TEST_PersonJobValueRefdEntity ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueRefdEntity;
+DROP INDEX IX_TEST_PersonJobValueDateTime ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime;
+DROP INDEX IX_TEST_PersonJobRoot_NamedGraphId_Include ON internal_dot_dotalign_dot_com_teams_2.PersonJobRoot;
+*/
+
+
+begin transaction;
+
+
+
+DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+/**********************************************/
+
+CREATE TABLE #tmp_rollup (
+  Id int IDENTITY(1, 1) PRIMARY KEY,
+  CompanyMd5 binary(16),
+  DestinationRootId int,
+  DriverRootId int,
+  EntityDefinitionId int,
+  EntityKey nvarchar(256),
+  FallbackGuideRootId int,
+  FallbackGuideValue datetime,
+  LikelyNotCurrentAsOf datetime,
+  LikelyPartTime bit,
+  MaxCurrentAsOf datetime,
+  MaxPosSourceTally int,
+  MinNegSourceTally int,
+  NamedGraphId int,
+  PersonMd5 binary(16),
+  ResolvedSourceTally int,
+  SubjectMd5 binary(16),
+  SubjectUri nvarchar(512)
+
+);
+
+
+/**********************************************/
+
+
+CREATE INDEX IX_#tmp_rollup_DriverResolution ON #tmp_rollup(PersonMd5, CompanyMd5, MaxCurrentAsOf) INCLUDE ( DriverRootId );
+CREATE INDEX IX_#tmp_rollup_SubjectMd5 ON #tmp_rollup(SubjectMd5);
+CREATE INDEX IX_#tmp_rollup_ResolvedSourceTally ON #tmp_rollup(ResolvedSourceTally);
+
+
+
+/**********************************************/
+
+declare @dt datetime;
+set @dt = getutcdate();
+
+
+INSERT INTO #tmp_rollup (
+NamedGraphId, 
+EntityDefinitionId, 
+DestinationRootId, 
+PersonMd5, 
+CompanyMd5, 
+MaxCurrentAsOf, 
+DriverRootId, 
+FallbackGuideValue, 
+FallbackGuideRootId, 
+MinNegSourceTally, 
+MaxPosSourceTally, 
+ResolvedSourceTally, 
+EntityKey, 
+SubjectUri, 
+SubjectMd5, 
+LikelyNotCurrentAsOf, 
+LikelyPartTime
+)
+SELECT DISTINCT
+( 21 /* SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/' */ ) AS NamedGraphId /* http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/ */, 
+( 87 /* SELECT Id FROM EntityDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/' */ ) AS EntityDefinitionId /* PersonJob */, 
+CAST(NULL as int) AS DestinationRootId, 
+x_personmd5_concord.AnchorLowMd5 AS PersonMd5 /* UX */, 
+x_companymd5_concord.AnchorLowMd5 AS CompanyMd5 /* UX */, 
+MAX(x_maxcurrentasof.Value) AS MaxCurrentAsOf /* Driver */, 
+CAST(NULL as int) AS DriverRootId, 
+MAX(CASE WHEN fval.RefdSubjectMd5 IS NOT NULL THEN x_maxcurrentasof.Value ELSE NULL END) AS FallbackGuideValue, 
+CAST(NULL as int) AS FallbackGuideRootId, 
+MIN(CASE WHEN x_sourcetally.Value < 0 THEN x_sourcetally.Value ELSE NULL END) AS MinNegSourceTally, 
+MAX(CASE WHEN x_sourcetally.Value > 0 THEN x_sourcetally.Value ELSE NULL END) AS MaxPosSourceTally, 
+CAST(NULL as int) AS ResolvedSourceTally, 
+LOWER(CONVERT(char(32), x_personmd5_concord.AnchorLowMd5, 2)) + '-' + LOWER(CONVERT(char(32), x_companymd5_concord.AnchorLowMd5, 2)) AS EntityKey, 
+'http://ns.dotalign.com/schemas/distilled/personjob/' + LOWER(LOWER(CONVERT(char(32), x_personmd5_concord.AnchorLowMd5, 2)) + '-' + LOWER(CONVERT(char(32), x_companymd5_concord.AnchorLowMd5, 2))) + '/' AS SubjectUri, 
+CAST(HashBytes('MD5', CONVERT(VARCHAR(MAX), LOWER('http://ns.dotalign.com/schemas/distilled/personjob/' + LOWER(LOWER(CONVERT(char(32), x_personmd5_concord.AnchorLowMd5, 2)) + '-' + LOWER(CONVERT(char(32), x_companymd5_concord.AnchorLowMd5, 2))) + '/')) COLLATE Latin1_General_100_CI_AS_SC_UTF8) as binary(16)) AS SubjectMd5, 
+MAX(x_likelynotcurrentasof.Value) AS LikelyNotCurrentAsOf, 
+MAX(CAST(x_likelyparttime.Value as int)) AS LikelyPartTime
+FROM internal_dot_dotalign_dot_com_teams_2.PersonJobRoot x_root
+-- Uxs
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_personmd5
+    ON x_personmd5.GraphedEntityRootId = x_root.Id
+    AND x_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
+JOIN internal_dot_dotalign_dot_com_teams_2_C1.PersonMasterMeOnlyComposite x_personmd5_concord
+    ON x_personmd5_concord.MemberHighMd5 = x_personmd5.Value
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_companymd5
+    ON x_companymd5.GraphedEntityRootId = x_root.Id
+    AND x_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
+JOIN internal_dot_dotalign_dot_com_teams_2_C1.CompanyMasterMeOnlyComposite x_companymd5_concord
+    ON x_companymd5_concord.MemberHighMd5 = x_companymd5.Value
+
+-- SourceTally
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueInt x_sourcetally
+    ON x_sourcetally.GraphedEntityRootId = x_root.Id
+    AND x_sourcetally.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/sourcetally/' )
+-- Driver
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime x_maxcurrentasof
+    ON x_maxcurrentasof.GraphedEntityRootId = x_root.Id
+    AND x_maxcurrentasof.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/maxcurrentasof/' )
+-- Non-driver aggregates
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime x_likelynotcurrentasof
+    ON x_likelynotcurrentasof.GraphedEntityRootId = x_root.Id
+    AND x_likelynotcurrentasof.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/likelynotcurrentasof/' )
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueBit x_likelyparttime
+    ON x_likelyparttime.GraphedEntityRootId = x_root.Id
+    AND x_likelyparttime.PropertyDefinitionId =( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/likelyparttime/' )
+
+-- fallback guide
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueRefdEntity fval
+    ON fval.GraphedEntityRootId = x_root.Id
+    AND fval.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/matchedjobtitle/' )
+
+WHERE x_sourcetally.Value != 0
+  AND x_root.NamedGraphId != ( SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_2/meonlycomposite/job/' )
+GROUP BY x_personmd5_concord.AnchorLowMd5, x_companymd5_concord.AnchorLowMd5;
+-- Sql step:
+
+
+select 'a', datediff(ms, @dt, getutcdate());
+
+/* REVISED */
+
+-- Execution step: Update temp table with Driver Id for TeamActorPersonJobRollupQuery
+UPDATE t
+SET DriverRootId = COALESCE( t.DriverRootId, x_root.Id )
+FROM internal_dot_dotalign_dot_com_teams_2.PersonJobRoot x_root
+-- Uxs
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_personmd5
+    ON x_personmd5.GraphedEntityRootId = x_root.Id
+    AND x_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
+JOIN internal_dot_dotalign_dot_com_teams_2_C1.PersonMasterMeOnlyComposite x_personmd5_concord
+    ON x_personmd5_concord.MemberHighMd5 = x_personmd5.Value
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_companymd5
+    ON x_companymd5.GraphedEntityRootId = x_root.Id
+    AND x_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
+JOIN internal_dot_dotalign_dot_com_teams_2_C1.CompanyMasterMeOnlyComposite x_companymd5_concord
+    ON x_companymd5_concord.MemberHighMd5 = x_companymd5.Value
+-- Driver
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime x_maxcurrentasof
+    ON x_maxcurrentasof.GraphedEntityRootId = x_root.Id
+    AND x_maxcurrentasof.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/maxcurrentasof/' )
+JOIN #tmp_rollup t ON t.PersonMd5 = x_personmd5_concord.AnchorLowMd5
+ AND t.CompanyMd5 = x_companymd5_concord.AnchorLowMd5
+ AND t.MaxCurrentAsOf = x_maxcurrentasof.Value
+;
+
+select 'b', datediff(ms, @dt, getutcdate());
+
+/* ORIGINAL */
+
+-- Execution step: Update temp table with Driver Id for TeamActorPersonJobRollupQuery
+;WITH cte1 AS (
+SELECT MIN(x_root.Id) AS DriverRootId,
+x_personmd5_concord.AnchorLowMd5 AS Key1, 
+x_companymd5_concord.AnchorLowMd5 AS Key2, 
+x_maxcurrentasof.Value AS Key3
+FROM internal_dot_dotalign_dot_com_teams_2.PersonJobRoot x_root
+-- Uxs
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_personmd5
+    ON x_personmd5.GraphedEntityRootId = x_root.Id
+    AND x_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
+JOIN internal_dot_dotalign_dot_com_teams_2_C1.PersonMasterMeOnlyComposite x_personmd5_concord
+    ON x_personmd5_concord.MemberHighMd5 = x_personmd5.Value
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_companymd5
+    ON x_companymd5.GraphedEntityRootId = x_root.Id
+    AND x_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
+JOIN internal_dot_dotalign_dot_com_teams_2_C1.CompanyMasterMeOnlyComposite x_companymd5_concord
+    ON x_companymd5_concord.MemberHighMd5 = x_companymd5.Value
+-- Driver
+JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime x_maxcurrentasof
+    ON x_maxcurrentasof.GraphedEntityRootId = x_root.Id
+    AND x_maxcurrentasof.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/maxcurrentasof/' )
+GROUP BY x_personmd5_concord.AnchorLowMd5, x_companymd5_concord.AnchorLowMd5, x_maxcurrentasof.Value
+)
+UPDATE t
+SET DriverRootId = COALESCE( t.DriverRootId, c.DriverRootId )
+FROM cte1 c
+JOIN #tmp_rollup t ON t.PersonMd5 = c.Key1
+ AND t.CompanyMd5 = c.Key2
+ AND t.MaxCurrentAsOf = c.Key3
+;
+
+select 'c', datediff(ms, @dt, getutcdate());
+
+rollback transaction;
