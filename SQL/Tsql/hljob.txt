@@ -5,6 +5,15 @@ SET STATISTICS TIME ON;
 DBCC SHOW_STATISTICS(
   'internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16', 
   IX_PersonJobValueFixedBinary16_Value_PropertyDefinitionId_GraphedEntityRootId)
+  
+DBCC SHOW_STATISTICS(
+  'internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime', 
+  IX_PersonJobValueDateTime_Value_PropertyDefinitionId_GraphedEntityRootId)
+  
+DBCC SHOW_STATISTICS(
+  'internal_dot_dotalign_dot_com_teams_1.PersonJobValueRefdEntity', 
+  IX_PersonJobValueRefdEntity_RefdSubjectMd5_PropertyDefinitionId_GraphedEntityRootId)
+  
 */
 
 /*
