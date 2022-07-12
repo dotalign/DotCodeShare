@@ -1,3 +1,5 @@
+SET STATISTICS IO ON;
+
 /*
 CREATE INDEX IX_TEST_PersonJobValueFixedBinary16 ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 (PropertyDefinitionId, Value) INCLUDE (GraphedEntityRootId);
 CREATE INDEX IX_TEST_PersonJobValueRefdEntity ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueRefdEntity (PropertyDefinitionId, RefdSubjectMd5) INCLUDE (GraphedEntityRootId);
