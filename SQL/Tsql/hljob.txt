@@ -1,6 +1,12 @@
 SET STATISTICS IO ON;
 
 /*
+DBCC SHOW_STATISTICS(
+  'internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16', 
+  IX_PersonJobValueFixedBinary16_Value_PropertyDefinitionId_GraphedEntityRootId)
+*/
+
+/*
 CREATE INDEX IX_TEST_PersonJobValueFixedBinary16 ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 (PropertyDefinitionId, Value) INCLUDE (GraphedEntityRootId);
 CREATE INDEX IX_TEST_PersonJobValueRefdEntity ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueRefdEntity (PropertyDefinitionId, RefdSubjectMd5) INCLUDE (GraphedEntityRootId);
 CREATE INDEX IX_TEST_PersonJobValueDateTime ON internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime (PropertyDefinitionId, Value) INCLUDE (GraphedEntityRootId);
