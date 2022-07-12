@@ -140,36 +140,6 @@ GROUP BY x_personmd5_concord.AnchorLowMd5, x_companymd5_concord.AnchorLowMd5;
 
 select 'a', datediff(ms, @dt, getutcdate());
 
-/* REVISED */
-
--- Execution step: Update temp table with Driver Id for TeamActorPersonJobRollupQuery
-UPDATE t
-SET DriverRootId = COALESCE( t.DriverRootId, x_root.Id )
-FROM internal_dot_dotalign_dot_com_teams_2.PersonJobRoot x_root
--- Uxs
-JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_personmd5
-    ON x_personmd5.GraphedEntityRootId = x_root.Id
-    AND x_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
-JOIN internal_dot_dotalign_dot_com_teams_2_C1.PersonMasterMeOnlyComposite x_personmd5_concord
-    ON x_personmd5_concord.MemberHighMd5 = x_personmd5.Value
-JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueFixedBinary16 x_companymd5
-    ON x_companymd5.GraphedEntityRootId = x_root.Id
-    AND x_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
-JOIN internal_dot_dotalign_dot_com_teams_2_C1.CompanyMasterMeOnlyComposite x_companymd5_concord
-    ON x_companymd5_concord.MemberHighMd5 = x_companymd5.Value
--- Driver
-JOIN internal_dot_dotalign_dot_com_teams_2.PersonJobValueDateTime x_maxcurrentasof
-    ON x_maxcurrentasof.GraphedEntityRootId = x_root.Id
-    AND x_maxcurrentasof.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/maxcurrentasof/' )
-JOIN #tmp_rollup t ON t.PersonMd5 = x_personmd5_concord.AnchorLowMd5
- AND t.CompanyMd5 = x_companymd5_concord.AnchorLowMd5
- AND t.MaxCurrentAsOf = x_maxcurrentasof.Value
-;
-
-select 'b', datediff(ms, @dt, getutcdate());
-
-/* ORIGINAL */
-
 -- Execution step: Update temp table with Driver Id for TeamActorPersonJobRollupQuery
 ;WITH cte1 AS (
 SELECT MIN(x_root.Id) AS DriverRootId,
@@ -202,6 +172,6 @@ JOIN #tmp_rollup t ON t.PersonMd5 = c.Key1
  AND t.MaxCurrentAsOf = c.Key3
 ;
 
-select 'c', datediff(ms, @dt, getutcdate());
+select 'b', datediff(ms, @dt, getutcdate());
 
 rollback transaction;
