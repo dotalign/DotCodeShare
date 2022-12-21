@@ -1,0 +1,237 @@
+/************************************************/
+-- 0) REMOVE "NEW" TABLES (to test again)
+/************************************************/
+
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime;
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueFixedBinary16;
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueInt;
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot;
+
+/************************************************/
+-- DIAGNOSIS
+/************************************************/
+
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot') + 1 AS 'ORIGINAL_ID_UserCompanyStatRoot'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueDateTime') + 1 AS 'ORIGINAL_ID_UserCompanyStatValueDateTime'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueFixedBinary16') + 1 AS 'ORIGINAL_ID_UserCompanyStatValueFixedBinary16'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt') + 1 AS 'ORIGINAL_ID_UserCompanyStatValueInt'
+
+/************************************************/
+-- 1) CREATE CLONE TABLES
+/************************************************/
+
+-- ROOT
+
+    CREATE TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatRoot](
+      [Id] [int] IDENTITY(1,1) NOT NULL,
+      [Created] [datetime] NULL,
+      [EntityDefinitionId] [int] NOT NULL,
+      [EntityKey] [nvarchar](256) NOT NULL,
+      [NamedGraphId] [int] NOT NULL,
+      [SearchBlob] [nvarchar](max) NULL,
+      [SubjectMd5] [binary](16) NOT NULL,
+      [SubjectUri] [nvarchar](512) NOT NULL,
+      [TimestampUtc] [datetime] NULL,
+    PRIMARY KEY CLUSTERED 
+    (
+      [Id] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+    UNIQUE NONCLUSTERED 
+    (
+      [SubjectMd5] ASC,
+      [NamedGraphId] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+    ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+    
+
+-- DATETIME
+
+    CREATE TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatValueDateTime](
+      [Id] [int] IDENTITY(1,1) NOT NULL,
+      [Created] [datetime] NULL,
+      [GraphedEntityRootId] [int] NOT NULL,
+      [LastModified] [datetime] NULL,
+      [PropertyDefinitionId] [int] NOT NULL,
+      [Value] [datetime] MASKED WITH (FUNCTION = 'default()') NULL,
+    PRIMARY KEY CLUSTERED 
+    (
+      [Id] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+    UNIQUE NONCLUSTERED 
+    (
+      [GraphedEntityRootId] ASC,
+      [PropertyDefinitionId] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+    ) ON [PRIMARY]
+
+    ALTER TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatValueDateTime]  WITH CHECK ADD FOREIGN KEY([GraphedEntityRootId])
+    REFERENCES [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatRoot] ([Id])
+
+-- FIXEDBINARY16
+
+    CREATE TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatValueFixedBinary16](
+      [Id] [int] IDENTITY(1,1) NOT NULL,
+      [Created] [datetime] NULL,
+      [GraphedEntityRootId] [int] NOT NULL,
+      [LastModified] [datetime] NULL,
+      [PropertyDefinitionId] [int] NOT NULL,
+      [Value] [binary](16) NULL,
+    PRIMARY KEY CLUSTERED 
+    (
+      [Id] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+    UNIQUE NONCLUSTERED 
+    (
+      [GraphedEntityRootId] ASC,
+      [PropertyDefinitionId] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+    ) ON [PRIMARY]
+
+    ALTER TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatValueFixedBinary16]  WITH CHECK ADD FOREIGN KEY([GraphedEntityRootId])
+    REFERENCES [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatRoot] ([Id])
+
+
+-- INT
+
+    CREATE TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatValueInt](
+      [Id] [int] IDENTITY(1,1) NOT NULL,
+      [Created] [datetime] NULL,
+      [GraphedEntityRootId] [int] NOT NULL,
+      [LastModified] [datetime] NULL,
+      [PropertyDefinitionId] [int] NOT NULL,
+      [Value] [int] MASKED WITH (FUNCTION = 'default()') NULL,
+    PRIMARY KEY CLUSTERED 
+    (
+      [Id] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+    UNIQUE NONCLUSTERED 
+    (
+      [GraphedEntityRootId] ASC,
+      [PropertyDefinitionId] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+    ) ON [PRIMARY]
+
+    ALTER TABLE [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatValueInt]  WITH CHECK ADD FOREIGN KEY([GraphedEntityRootId])
+    REFERENCES [internal_dot_dotalign_dot_com_teams_2].[NEW_UserCompanyStatRoot] ([Id])
+
+/************************************************/
+-- 2) POPULATE CLONE TABLES
+-- *** NOTE *** Avoid running a begin/rollback test 
+                because that pushes forward the Identity counter
+/************************************************/
+    DECLARE @srcTallyPropDefnId int;
+    SET @srcTallyPropDefnId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercompanystat/sourcetally/' );
+
+    INSERT INTO internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot ( EntityDefinitionId, NamedGraphId, EntityKey, SubjectUri, SubjectMd5, Created, TimestampUtc )
+    SELECT DISTINCT r.EntityDefinitionId, r.NamedGraphId, r.EntityKey, r.SubjectUri, r.SubjectMd5, r.Created, r.TimestampUtc
+    FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot r
+    JOIN internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt v ON v.GraphedEntityRootId = r.Id
+      AND v.PropertyDefinitionId = @srcTallyPropDefnId
+    -- allows us to safely re-run
+    LEFT JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot ex
+      ON ex.NamedGraphId = r.NamedGraphId
+      AND ex.SubjectMd5 = r.SubjectMd5
+    WHERE v.Value IS NOT NULL AND v.Value != 0
+      AND ex.Id IS NULL;
+
+    INSERT INTO internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime ( GraphedEntityRootId, Value, PropertyDefinitionId, Created, LastModified )
+    SELECT rdest.Id, vsrc.Value, vsrc.PropertyDefinitionId, vsrc.Created, vsrc.LastModified
+    FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot rsrc
+    JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot rdest ON rdest.SubjectMd5 = rsrc.SubjectMd5 AND rdest.NamedGraphId = rsrc.NamedGraphId
+    JOIN internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueDateTime vsrc ON vsrc.GraphedEntityRootId = rsrc.Id
+    -- allows us to safely re-run
+    LEFT JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime ex
+      ON ex.GraphedEntityRootId = rdest.Id
+      AND ex.PropertyDefinitionId = vsrc.PropertyDefinitionId
+    WHERE vsrc.Value IS NOT NULL
+      AND ex.Id IS NULL;
+
+    INSERT INTO internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueFixedBinary16 ( GraphedEntityRootId, Value, PropertyDefinitionId, Created, LastModified )
+    SELECT rdest.Id, vsrc.Value, vsrc.PropertyDefinitionId, vsrc.Created, vsrc.LastModified
+    FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot rsrc
+    JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot rdest ON rdest.SubjectMd5 = rsrc.SubjectMd5 AND rdest.NamedGraphId = rsrc.NamedGraphId
+    JOIN internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueFixedBinary16 vsrc ON vsrc.GraphedEntityRootId = rsrc.Id
+    -- allows us to safely re-run
+    LEFT JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime ex
+      ON ex.GraphedEntityRootId = rdest.Id
+      AND ex.PropertyDefinitionId = vsrc.PropertyDefinitionId
+    WHERE vsrc.Value IS NOT NULL
+      AND ex.Id IS NULL;
+
+    INSERT INTO internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueInt ( GraphedEntityRootId, Value, PropertyDefinitionId, Created, LastModified )
+    SELECT rdest.Id, vsrc.Value, vsrc.PropertyDefinitionId, vsrc.Created, vsrc.LastModified
+    FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot rsrc
+    JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot rdest ON rdest.SubjectMd5 = rsrc.SubjectMd5 AND rdest.NamedGraphId = rsrc.NamedGraphId
+    JOIN internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt vsrc ON vsrc.GraphedEntityRootId = rsrc.Id
+    -- allows us to safely re-run
+    LEFT JOIN internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime ex
+      ON ex.GraphedEntityRootId = rdest.Id
+      AND ex.PropertyDefinitionId = vsrc.PropertyDefinitionId
+    WHERE vsrc.Value IS NOT NULL
+      AND ex.Id IS NULL;
+
+/************************************************/
+-- 3) MANUALLY VERIFY!!!
+/************************************************/
+
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot;
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime;
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueFixedBinary16;
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueInt;
+    
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot;
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime;
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueFixedBinary16;
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueInt;
+
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot') + 1 AS 'NEW_ID_UserCompanyStatRoot'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime') + 1 AS 'NEW_ID_UserCompanyStatValueDateTime'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueFixedBinary16') + 1 AS 'NEW_ID_UserCompanyStatValueFixedBinary16'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueInt') + 1 AS 'NEW_ID_UserCompanyStatValueInt'
+    
+/************************************************/
+-- 4) RENAME ORIGINAL to "old"
+/************************************************/
+
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot', 'OLD_UserCompanyStatRoot';
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueDateTime', 'OLD_UserCompanyStatValueDateTime';
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueFixedBinary16', 'OLD_UserCompanyStatValueFixedBinary16';
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt', 'OLD_UserCompanyStatValueInt';
+    
+/************************************************/
+-- 4) RENAME new tables to their proper names
+/************************************************/
+
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatRoot', 'UserCompanyStatRoot';
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueDateTime', 'UserCompanyStatValueDateTime';
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueFixedBinary16', 'UserCompanyStatValueFixedBinary16';
+    exec sp_rename 'internal_dot_dotalign_dot_com_teams_2.NEW_UserCompanyStatValueInt', 'UserCompanyStatValueInt';
+    
+/************************************************/
+-- 5) MANUALLY VERIFY AGAIN!!!
+/************************************************/
+
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot;
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueDateTime;
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueFixedBinary16;
+    SELECT TOP 10 * FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt;
+    
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot;
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueDateTime;
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueFixedBinary16;
+    SELECT COUNT(Id) FROM internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt;
+
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatRoot') + 1 AS 'ID_UserCompanyStatRoot'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueDateTime') + 1 AS 'ID_UserCompanyStatValueDateTime'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueFixedBinary16') + 1 AS 'ID_UserCompanyStatValueFixedBinary16'
+    SELECT IDENT_CURRENT('internal_dot_dotalign_dot_com_teams_2.UserCompanyStatValueInt') + 1 AS 'ID_UserCompanyStatValueInt'
+    
+/************************************************/
+-- 5) DEFINITELY WORKING OK? DELETE ORIGINAL
+/************************************************/
+  
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.OLD_UserCompanyStatValueDateTime;
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.OLD_UserCompanyStatValueFixedBinary16;
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.OLD_UserCompanyStatValueInt;
+  DROP TABLE internal_dot_dotalign_dot_com_teams_2.OLD_UserCompanyStatRoot;
+
