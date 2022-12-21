@@ -117,7 +117,7 @@
 /************************************************/
 -- 2) POPULATE CLONE TABLES
 -- *** NOTE *** Avoid running a begin/rollback test 
-                because that pushes forward the Identity counter
+--              because that pushes forward the Identity counter
 /************************************************/
     DECLARE @srcTallyPropDefnId int;
     SET @srcTallyPropDefnId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercompanystat/sourcetally/' );
