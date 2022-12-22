@@ -1,0 +1,49 @@
+begin transaction;
+
+
+DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: 
+/**********************************************/
+
+CREATE TABLE #tmpkill (
+    Id int PRIMARY KEY
+);
+/**********************************************/
+
+DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'DeletePrivateOrFiltered-Standard-CreateTmpKill-Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+rollback transaction;
