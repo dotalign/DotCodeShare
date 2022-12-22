@@ -1,0 +1,1223 @@
+begin transaction;
+
+-- Sql step:
+DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Mark start of entity push
+/**********************************************/
+
+
+DECLARE @tagId int;
+
+SET @tagId = (
+    SELECT tag.Id
+    FROM dbo.TeamAccessToGraph tag
+    JOIN dbo.Team teem ON teem.Id = tag.TeamId
+    JOIN dbo.NamedGraph ng ON ng.Id = tag.NamedGraphId
+    WHERE teem.TeamNumber = 2
+      AND ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+);
+
+UPDATE pt
+SET LastMainPushStarted = @startTime
+FROM dbo.PushTracker pt
+WHERE pt.TeamAccessToGraphId = @tagId
+  AND pt.EntityDefinitionId = 52 /* CompanyPreferredName */
+;
+
+/**********************************************/
+
+DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'TrackPushStart-Shared',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Create Push temp table
+/**********************************************/
+
+CREATE TABLE #stdtmproot (
+    Id int PRIMARY KEY,
+    SubjectMd5 binary(16) NOT NULL,
+    DestId int,
+    UNIQUE(SubjectMd5)
+);
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushTempCreation-Standard-Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Insert Composite pushable roots to temp table
+/**********************************************/
+
+INSERT INTO #stdtmproot ( Id, SubjectMd5 )
+SELECT DISTINCT r.Id, r.SubjectMd5
+FROM USERPARTITION_C1.CompanyPreferredNameRoot r
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameRoot exd 
+    ON exd.SubjectMd5 = r.SubjectMd5
+    AND exd.NamedGraphId = r.NamedGraphId
+WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/' )
+  AND r.TimestampUtc != COALESCE(exd.TimestampUtc, GETUTCDATE())
+;
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'RootInsertToTemp-Standard-Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: 
+/**********************************************/
+
+CREATE TABLE #tmpkill (
+    Id int PRIMARY KEY
+);
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'DeletePrivateOrFiltered-Standard-CreateTmpKill-Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: 
+/**********************************************/
+
+;WITH cte AS ( 
+SELECT DISTINCT cnam_root.SubjectMd5 AS Md5
+FROM USERPARTITION_C1.CompanyPreferredNameRoot cnam_root
+JOIN USERPARTITION_C1.CompanyPreferredNameValueFixedBinary16 cnam_companymd5 ON cnam_companymd5.GraphedEntityRootId = cnam_root.Id AND cnam_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
+JOIN USERPARTITION_C1.PersonJobValueFixedBinary16 job_companymd5 ON job_companymd5.Value = cnam_companymd5.Value AND job_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
+JOIN USERPARTITION_C1.PersonJobRoot job_root ON job_root.Id = job_companymd5.GraphedEntityRootId
+JOIN USERPARTITION_C1.PersonJobValueFixedBinary16 job_personmd5 ON job_personmd5.GraphedEntityRootId = job_root.Id AND job_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
+JOIN USERPARTITION_C1.UserContactStatValueFixedBinary16 ucs_contactmd5 ON ucs_contactmd5.Value = job_personmd5.Value AND ucs_contactmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercontactstat/contactmd5/' )
+JOIN USERPARTITION_C1.UserContactStatRoot ucs_root ON ucs_root.Id = ucs_contactmd5.GraphedEntityRootId
+LEFT JOIN USERPARTITION_C1.UserContactStatValueBit ucs_isrelevant ON ucs_isrelevant.GraphedEntityRootId = ucs_root.Id AND ucs_isrelevant.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercontactstat/isrelevant/' )
+
+WHERE cnam_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/job/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowperson/' ))
+AND job_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/job/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowperson/' ))
+AND ucs_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/job/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowperson/' ))
+AND ucs_isrelevant.Value = 1
+
+
+)
+
+INSERT INTO #tmpkill ( Id )
+SELECT DISTINCT r.Id
+FROM USERPARTITION_C1.CompanyPreferredNameRoot r
+JOIN dbo.NamedGraph ng ON ng.Id = r.NamedGraphId
+LEFT JOIN cte c ON c.Md5 = r.SubjectMd5
+LEFT JOIN #tmpkill ex ON ex.Id = r.Id
+WHERE ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+  AND c.Md5 IS NULL
+  AND ex.Id IS NULL;
+
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'DeletePrivateOrFiltered-Standard-FilterKill-Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: 
+/**********************************************/
+
+DELETE t
+FROM #stdtmproot t
+JOIN #tmpkill k ON k.Id = t.Id;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'DeletePrivateOrFiltered-Standard-DeleteFromTemp-Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push (insert) roots to team from temp
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameRoot ( EntityDefinitionId, NamedGraphId, SubjectMd5, EntityKey, SubjectUri, SearchBlob, TimestampUtc, Created )
+SELECT DISTINCT r.EntityDefinitionId, r.NamedGraphId, r.SubjectMd5, r.EntityKey, r.SubjectUri, r.SearchBlob, r.TimestampUtc, r.Created
+FROM USERPARTITION_C1.CompanyPreferredNameRoot r
+JOIN #stdtmproot t ON t.Id = r.Id
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameRoot ex ON ex.SubjectMd5 = r.SubjectMd5
+    AND ex.NamedGraphId = r.NamedGraphId
+WHERE ex.Id IS NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushRoots-Standard-Push Roots - Insert - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Learn Pushed Root's Destination Id
+/**********************************************/
+
+UPDATE t
+SET DestId = d.Id
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameRoot s ON s.Id = t.Id
+JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameRoot d ON d.SubjectMd5 = s.SubjectMd5
+    AND d.NamedGraphId = s.NamedGraphId;
+
+CREATE INDEX IX_#stdtmproot_DestId ON #stdtmproot ( DestId );
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushRoots-Standard-LearnDestId',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push Roots - Update
+/**********************************************/
+
+UPDATE d
+SET SearchBlob = s.SearchBlob,
+    TimestampUtc = s.TimestampUtc,
+    Created = s.Created
+FROM internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameRoot d
+JOIN #stdtmproot t ON t.DestId = d.Id
+JOIN USERPARTITION_C1.CompanyPreferredNameRoot s ON s.Id = t.Id;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushRoots-Standard-Update Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push (insert) values to team from temp
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueFixedBinary16 ( GraphedEntityRootId, PropertyDefinitionId, Value, Created, LastModified )
+SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.Value, sv.Created, sv.LastModified
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameValueFixedBinary16 sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueFixedBinary16 ex ON ex.GraphedEntityRootId = t.DestId
+    AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
+WHERE ex.Id IS NULL;
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-Insert - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push (insert) values to team from temp
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueRefdEntity ( GraphedEntityRootId, PropertyDefinitionId, RefdSubjectMd5, Created, LastModified )
+SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.RefdSubjectMd5, sv.Created, sv.LastModified
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameValueRefdEntity sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companyname/' )
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueRefdEntity ex ON ex.GraphedEntityRootId = t.DestId
+    AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companyname/' )
+WHERE ex.Id IS NULL;
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-Insert - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push Values - Update
+/**********************************************/
+
+UPDATE dv
+SET Value = sv.Value,
+    Created = sv.Created,
+    LastModified = sv.LastModified
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
+JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueDateTime dv ON dv.GraphedEntityRootId = t.DestId
+    AND dv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-Update - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push (insert) values to team from temp
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueDateTime ( GraphedEntityRootId, PropertyDefinitionId, Value, Created, LastModified )
+SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.Value, sv.Created, sv.LastModified
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueDateTime ex ON ex.GraphedEntityRootId = t.DestId
+    AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
+WHERE ex.Id IS NULL;
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-Insert - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Pushing Values - Set Null if MIA
+/**********************************************/
+
+UPDATE dv
+SET Value = NULL,
+    LastModified = @startTime
+FROM #stdtmproot t
+JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueDateTime dv ON dv.GraphedEntityRootId = t.DestId
+    AND PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
+LEFT JOIN USERPARTITION_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
+WHERE sv.Value IS NULL
+  AND dv.Value IS NOT NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-SetNullIfMia',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push Values - Update
+/**********************************************/
+
+UPDATE dv
+SET Value = sv.Value,
+    Created = sv.Created,
+    LastModified = sv.LastModified
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
+JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueInt dv ON dv.GraphedEntityRootId = t.DestId
+    AND dv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-Update - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Push (insert) values to team from temp
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueInt ( GraphedEntityRootId, PropertyDefinitionId, Value, Created, LastModified )
+SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.Value, sv.Created, sv.LastModified
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueInt ex ON ex.GraphedEntityRootId = t.DestId
+    AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
+WHERE ex.Id IS NULL;
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-Insert - Composite',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Pushing Values - Set Null if MIA
+/**********************************************/
+
+UPDATE dv
+SET Value = NULL,
+    LastModified = @startTime
+FROM #stdtmproot t
+JOIN internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameValueInt dv ON dv.GraphedEntityRootId = t.DestId
+    AND PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
+LEFT JOIN USERPARTITION_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
+    AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
+WHERE sv.Value IS NULL
+  AND dv.Value IS NOT NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'PushValues-Standard-SetNullIfMia',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Prepare detritus temp table
+/**********************************************/
+
+
+SELECT destroot.SubjectMd5, destroot.NamedGraphId, destroot.EntityDefinitionId
+INTO #tmpDetritus
+FROM internal_dot_dotalign_dot_com_teams_2.CompanyPreferredNameRoot destroot
+JOIN dbo.NamedGraph ng ON ng.Id = destroot.NamedGraphId
+    AND ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+LEFT JOIN USERPARTITION_C1.CompanyPreferredNameRoot srcroot
+    ON srcroot.SubjectMd5 = destroot.SubjectMd5
+    AND srcroot.NamedGraphId = destroot.NamedGraphId
+LEFT JOIN #tmpkill k ON k.Id = srcroot.Id
+WHERE srcroot.Id IS NULL
+   OR k.Id IS NOT NULL;
+
+CREATE INDEX IX_#tmpDetritus ON #tmpDetritus(SubjectMd5, NamedGraphId, EntityDefinitionId);
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'StandardDetritus-Standard-Prepare Detritus Temp',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Insert into team detritus table
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_2.Detritus ( 
+    SubjectMd5, 
+    NamedGraphId,
+    EntityDefinitionId,
+    IsDetritus,
+    TimestampUtc )
+SELECT DISTINCT t.SubjectMd5,
+    t.NamedGraphId,
+    t.EntityDefinitionId,
+    1,
+    @startTime
+FROM #tmpDetritus t
+LEFT JOIN internal_dot_dotalign_dot_com_teams_2.Detritus ex
+    ON ex.SubjectMd5 = t.SubjectMd5
+    AND ex.NamedGraphId = t.NamedGraphId
+WHERE ex.Id IS NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'StandardDetritus-Standard-Tuple Standard Temp',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Mark team detritus
+/**********************************************/
+
+UPDATE d
+SET IsDetritus = 1,
+    TimestampUtc = @startTime
+FROM internal_dot_dotalign_dot_com_teams_2.Detritus d
+JOIN #tmpDetritus t 
+    ON d.SubjectMd5 = t.SubjectMd5
+    AND d.NamedGraphId = t.NamedGraphId
+    AND d.EntityDefinitionId = t.EntityDefinitionId
+    AND d.IsDetritus = 0;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'StandardDetritus-Standard-Mark Standard Detritus',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Umark team detritus
+/**********************************************/
+
+UPDATE d
+SET IsDetritus = 0,
+    TimestampUtc = @startTime
+FROM internal_dot_dotalign_dot_com_teams_2.Detritus d
+JOIN dbo.NamedGraph ng ON ng.Id = d.NamedGraphId
+LEFT JOIN #tmpDetritus t 
+    ON d.SubjectMd5 = t.SubjectMd5
+    AND d.NamedGraphId = t.NamedGraphId
+    AND d.EntityDefinitionId = t.EntityDefinitionId
+WHERE d.IsDetritus = 1
+  AND ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+  AND d.EntityDefinitionId = 52 /* CompanyPreferredName */
+  AND t.SubjectMd5 IS NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'CompanyPreferredName',
+    LastStepCommand = 'StandardDetritus-Standard-Unmark Standard Detritus',
+    LastTargetGraphUri = NULL,
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xe83ca71afb4010586cfd09618cab77dd;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Mark end of entity push (Composite)
+/**********************************************/
+
+
+DECLARE @result0x883023e9a85ede6fdb9874f2a1d8a5ca TABLE
+(
+    MaxLastModified datetime,
+    LastPushNumRoots int
+);
+
+DECLARE @maxLastModified0x883023e9a85ede6fdb9874f2a1d8a5ca datetime;
+DECLARE @lastPushNumRoots0x883023e9a85ede6fdb9874f2a1d8a5ca int;
+
+INSERT INTO @result0x883023e9a85ede6fdb9874f2a1d8a5ca ( MaxLastModified, LastPushNumRoots )
+SELECT  MAX(r.TimestampUtc), COUNT(t.Id)
+FROM #stdtmproot t
+JOIN USERPARTITION_C1.CompanyPreferredNameRoot r ON r.Id = t.Id
+WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/' );
+
+SET @maxLastModified0x883023e9a85ede6fdb9874f2a1d8a5ca = ( SELECT MAX(MaxLastModified) FROM @result0x883023e9a85ede6fdb9874f2a1d8a5ca );
+SET @lastPushNumRoots0x883023e9a85ede6fdb9874f2a1d8a5ca = ( SELECT MAX(LastPushNumRoots) FROM @result0x883023e9a85ede6fdb9874f2a1d8a5ca );
+
+UPDATE pt
+SET LastMainPushCompleted = @startTime,
+    LastMd5 = NULL,
+    LastMainPushElapsedMs = DATEDIFF(ms, LastMainPushStarted, @startTime),
+    LastMainPushNumRoots = @lastPushNumRoots0x883023e9a85ede6fdb9874f2a1d8a5ca,
+    CumMainPushNumRoots = COALESCE(CumMainPushNumRoots,0) + @lastPushNumRoots0x883023e9a85ede6fdb9874f2a1d8a5ca,
+    MaxPushedLastModified = CASE 
+        WHEN pt.MaxPushedLastModified IS NULL THEN @maxLastModified0x883023e9a85ede6fdb9874f2a1d8a5ca
+        WHEN pt.MaxPushedLastModified < @maxLastModified0x883023e9a85ede6fdb9874f2a1d8a5ca THEN @maxLastModified0x883023e9a85ede6fdb9874f2a1d8a5ca
+        ELSE pt.MaxPushedLastModified
+    END
+FROM dbo.PushTracker pt
+WHERE pt.Id = 7961;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_2'
+    AND DatabaseName IS NULL
+);
+
+
+
+rollback transaction;
