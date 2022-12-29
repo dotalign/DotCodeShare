@@ -1,0 +1,111 @@
+/********************************************/
+-- 1) CREATE NEW TABLE
+/********************************************/
+
+CREATE TABLE [dbo].[UserSecurityPartitionTrackerNEW](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[DotUserId] [int] NOT NULL,
+	[SecurityPartitionName] [nvarchar](128) NOT NULL,
+	[SecurityPartitionRoleId] [int] NOT NULL,
+	[SecurityPartitionStatusId] [int] NOT NULL,
+	[DatabaseName] [nvarchar](128) NULL,
+	[InstanceNumber] [int] NULL,
+	[ComputeStarted] [datetime] NULL,
+	[ComputeCompleted] [datetime] NULL,
+	[FreezeRequestedWhen] [datetime] NULL,
+	[FreezeRequestedBy] [nvarchar](128) NULL,
+	[FreezeRequestedUntil] [datetime] NULL,
+	[LastExecutedStepName] [nvarchar](128) NULL,
+	[LastStepCommand] [nvarchar](128) NULL,
+	[LastTargetGraphUri] [nvarchar](256) NULL,
+	[LastStepCmdTimeMs] [int] NULL,
+	[TimeSoFarThisRunMs] [int] NULL,
+	[CumTimeLastRunMs] [int] NULL,
+	[LastSauceError] [datetime] NULL,
+	[SauceErrorTally] [int] NULL,
+	[LastSauceFailStepName] [nvarchar](128) NULL,
+	[ComputeAndPushCompleted] [datetime] NULL,
+	[LastTeardown] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[SecurityPartitionName] ASC,
+	[DatabaseName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[UserSecurityPartitionTrackerNEW]  WITH CHECK ADD FOREIGN KEY([DotUserId])
+REFERENCES [dbo].[DotUser] ([Id])
+GO
+
+ALTER TABLE [dbo].[UserSecurityPartitionTrackerNEW]  WITH CHECK ADD FOREIGN KEY([SecurityPartitionRoleId])
+REFERENCES [dbo].[SecurityPartitionRole] ([Id])
+GO
+
+ALTER TABLE [dbo].[UserSecurityPartitionTrackerNew]  WITH CHECK ADD FOREIGN KEY([SecurityPartitionStatusId])
+REFERENCES [dbo].[SecurityPartitionStatus] ([Id])
+GO
+
+/********************************************/
+-- 2) POPULATE NEW TABLE
+/********************************************/
+
+INSERT INTO UserSecurityPartitionTrackerNEW (
+  DotUserId, 
+  SecurityPartitionName, 
+  SecurityPartitionRoleId,
+  SecurityPartitionStatusId,
+  DatabaseName,
+  InstanceNumber,
+  ComputeStarted,
+  ComputeCompleted,
+  FreezeRequestedWhen,
+  FreezeRequestedBy,
+  FreezeRequestedUntil,
+  LastExecutedStepName,
+  LastStepCommand,
+  LastTargetGraphUri,
+  LastStepCmdTimeMs,
+	TimeSoFarThisRunMs,
+	CumTimeLastRunMs,
+	LastSauceError,
+	SauceErrorTally,
+	LastSauceFailStepName,
+	ComputeAndPushCompleted,
+	LastTeardown
+)
+SELECT 
+  DotUserId, 
+  SecurityPartitionName, 
+  SecurityPartitionRoleId,
+  SecurityPartitionStatusId,
+  DatabaseName,
+  InstanceNumber,
+  ComputeStarted,
+  ComputeCompleted,
+  FreezeRequestedWhen,
+  FreezeRequestedBy,
+  FreezeRequestedUntil,
+  LastExecutedStepName,
+  LastStepCommand,
+  LastTargetGraphUri,
+  LastStepCmdTimeMs,
+	0, -- TimeSoFarThisRunMs,
+	CumTimeLastRunMs,
+	LastSauceError,
+	SauceErrorTally,
+	LastSauceFailStepName,
+	ComputeAndPushCompleted,
+	LastTeardown
+FROM dbo.UserSecurityPartitionTracker;
+
+/********************************************/
+-- 3) RENAME SOURCE TABLE
+/********************************************/
+
+exec sp_rename 'dbo.UserSecurityPartitionTracker', 'UserSecurityPartitionTrackerOLD';
+exec sp_rename 'dbo.UserSecurityPartitionTrackerNEW', 'UserSecurityPartitionTracker';
