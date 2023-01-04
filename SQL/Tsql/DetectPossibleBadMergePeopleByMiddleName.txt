@@ -1,34 +1,52 @@
 -- USAGE: If using e.g. team 2, replace "teams_1" with "teams_2"
+-- PERFORMANCE: If slow running as-is (sorted), run just the inner SELECT
 
--- Note: CASE statement avoids repeating both permutations
-SELECT DISTINCT CASE
-          WHEN pcr1.SubjectMd5 < pcr2.SubjectMd5 THEN ft1.Value
-          ELSE ft2.Value
-        END AS FullName1,
-        CASE
-          WHEN pcr1.SubjectMd5 > pcr2.SubjectMd5 THEN ft1.Value
-          ELSE ft2.Value
-        END AS FullName2
--- find complete name #1 (Robert E. Mueller)
-FROM unowned.PersonCompleteNameRoot pcr1
--- such that its TwoPartName (Robert Mueller)
-JOIN unowned.PersonCompleteNameValueRefdEntity rftpn1 ON rftpn1.GraphedEntityRootId = pcr1.Id
-  AND rftpn1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'TwoPartName' )
--- is shared by a second complete name (Robert * Mueler)
-JOIN unowned.PersonCompleteNameValueRefdEntity rftpn2 ON rftpn2.RefdSubjectMd5 = rftpn1.RefdSubjectMd5
-  AND rftpn2.PropertyDefinitionId = rftpn1.PropertyDefinitionId
-  AND rftpn2.GraphedEntityRootId != rftpn1.GraphedEntityRootId
-JOIN unowned.PersonCompleteNameRoot pcr2 ON pcr2.Id = rftpn2.GraphedEntityRootId
--- and review the middle name of each (name text is deemed "sensitive" so it's not in the unowned area)
--- pick a team to resolve text
--- retrieve both full names
-JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar256 ft1 ON ft1.GraphedEntityRootId = pcr1.Id
-  AND ft1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'StandardizedName' )
-JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar256 ft2 ON ft2.GraphedEntityRootId = pcr2.Id
-  AND ft2.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'StandardizedName' )
--- and require middle name text for both candidates
-JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar64 mid1 ON mid1.GraphedEntityRootId = pcr1.Id
-  AND mid1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'MiddleName1' )
-JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar64 mid2 ON mid2.GraphedEntityRootId = pcr2.Id
-  AND mid2.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'MiddleName1' )
-WHERE LEFT(mid1.Value,1) != LEFT(mid2.Value,1)
+SELECT x.*
+FROM 
+(
+  -- CASE statement avoids repeating both permutations
+  SELECT DISTINCT CASE
+            WHEN pcr1.SubjectMd5 < pcr2.SubjectMd5 THEN ft1.Value
+            ELSE ft2.Value
+          END AS FullName1,
+          CASE
+            WHEN pcr1.SubjectMd5 > pcr2.SubjectMd5 THEN ft1.Value
+            ELSE ft2.Value
+          END AS FullName2,
+          CASE
+            WHEN m1.AnchorLowMd5 = m2.AnchorLowMd5 THEN 1
+            ELSE 0
+          END AS CurrentlyMerged
+  -- find complete name #1 (Robert E. Mueller)
+  FROM unowned.PersonCompleteNameRoot pcr1
+  -- such that its TwoPartName (Robert Mueller)
+  JOIN unowned.PersonCompleteNameValueRefdEntity rftpn1 ON rftpn1.GraphedEntityRootId = pcr1.Id
+    AND rftpn1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'TwoPartName' )
+  -- is shared by a second complete name (Robert * Mueler)
+  JOIN unowned.PersonCompleteNameValueRefdEntity rftpn2 ON rftpn2.RefdSubjectMd5 = rftpn1.RefdSubjectMd5
+    AND rftpn2.PropertyDefinitionId = rftpn1.PropertyDefinitionId
+    AND rftpn2.GraphedEntityRootId != rftpn1.GraphedEntityRootId
+  JOIN unowned.PersonCompleteNameRoot pcr2 ON pcr2.Id = rftpn2.GraphedEntityRootId
+  -- and review the middle name of each (name text is deemed "sensitive" so it's not in the unowned area)
+  -- pick a team to resolve text
+  -- retrieve both full names
+  JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar256 ft1 ON ft1.GraphedEntityRootId = pcr1.Id
+    AND ft1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'StandardizedName' )
+  JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar256 ft2 ON ft2.GraphedEntityRootId = pcr2.Id
+    AND ft2.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'StandardizedName' )
+  -- and require middle name text for both candidates
+  JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar64 mid1 ON mid1.GraphedEntityRootId = pcr1.Id
+    AND mid1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'MiddleName1' )
+  JOIN internal_dot_dotalign_dot_com_teams_1.PersonCompleteNameValueNvarchar64 mid2 ON mid2.GraphedEntityRootId = pcr2.Id
+    AND mid2.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'MiddleName1' )
+  -- now get the identifier Md5 for each
+  JOIN unowned.PersonCompleteNameValueFixedBinary16 b1 ON b1.GraphedEntityRootId = pcr1.Id
+    AND b1.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'IdentifierMd5' )
+  JOIN unowned.PersonCompleteNameValueFixedBinary16 b2 ON b2.GraphedEntityRootId = pcr2.Id
+    AND b2.PropertyDefinitionId IN ( SELECT Id FROM PropertyDefinition WHERE Name = 'IdentifierMd5' )
+  -- and use that to see if we've merged the two together
+  LEFT JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonMasterMeOnlyComposite m1 ON m1.MemberHighMd5 = b1.Value
+  LEFT JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonMasterMeOnlyComposite m2 ON m2.MemberHighMd5 = b2.Value
+  WHERE LEFT(mid1.Value,1) != LEFT(mid2.Value,1)
+) x
+ORDER BY x.CurrentlyMerged DESC
