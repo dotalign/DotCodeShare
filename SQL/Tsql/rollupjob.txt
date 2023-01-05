@@ -193,3 +193,5 @@ JOIN #tmp_rollup t ON t.PersonMd5 = c.Key1
 select 'b', datediff(ms, @dt, getutcdate());
 
 rollback transaction;
+
+-- trigger commit
