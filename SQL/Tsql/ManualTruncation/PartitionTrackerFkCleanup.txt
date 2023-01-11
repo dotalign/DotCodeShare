@@ -1,0 +1,54 @@
+/*****************************************************
+  SITUATION
+  After recent manual maintenance via:
+    https://github.com/dotalign/DotCodeShare/blob/master/SQL/Tsql/ManualTruncation/RebuildUserSecurityPartitionTracker.txt
+    there is a residual UserSecurityPartitionTrackerOLD table (note the suffix "OLD")
+    and it interferes with migration
+*****************************************************/
+
+/****************************************************
+  1) First check for the table
+****************************************************/
+    SELECT * FROM dbo.UserSecurityPartitionTrackerOLD;
+    -- assuming it exists, proceed.
+
+/****************************************************
+  2) Try to drop the table
+****************************************************/
+    DROP TABLE dbo.UserSecurityPartitionTrackerOLD;
+    -- this is expected to fail
+    -- further steps required below
+
+/****************************************************
+  3) Find the constraint name that interferes
+****************************************************/
+  SELECT CONSTRAINT_NAME, *
+  FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+  WHERE TABLE_NAME =  'ProcessingStat'
+  AND COLUMN_NAME =  'LastRunTrackerId'
+
+  -- on our test DB, this output:
+  -- FK__Processin__LastR__7755B73D
+
+/**************************/
+-- 4) Drop the constraint
+/**************************/
+
+-- SUBSTITUTE THE CONSTRAINT NAME FIRST FROM PRIOR STEP, THEN RUN:
+
+ALTER TABLE [dbo].[ProcessingStat] DROP CONSTRAINT [FK__Processin__LastR__7755B73D]
+
+/********************************************************************************************************/
+-- 5) Clear the ProcessingStat table (it's non-critical performance logging data)
+/********************************************************************************************************/
+
+TRUNCATE TABLE dbo.ProcessingStat;
+
+/****************************************************/
+-- 6) Now re-add the constraint
+/****************************************************/
+
+ALTER TABLE [dbo].[ProcessingStat]  WITH CHECK ADD FOREIGN KEY([LastRunTrackerId])
+REFERENCES [dbo].[UserSecurityPartitionTracker] ([Id])
+
+
