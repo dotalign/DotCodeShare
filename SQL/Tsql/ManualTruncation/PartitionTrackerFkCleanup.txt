@@ -51,4 +51,11 @@ TRUNCATE TABLE dbo.ProcessingStat;
 ALTER TABLE [dbo].[ProcessingStat]  WITH CHECK ADD FOREIGN KEY([LastRunTrackerId])
 REFERENCES [dbo].[UserSecurityPartitionTracker] ([Id])
 
+/****************************************************/
+-- 7) This index also got missed in our prior script; run this
+/****************************************************/
 
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_UserSecurityPartitionTracker_DotUserId_ComputeAndPushCompleted_ComputeStarted' AND object_id = OBJECT_ID('dbo.UserSecurityPartitionTracker'))
+BEGIN
+CREATE INDEX IX_UserSecurityPartitionTracker_DotUserId_ComputeAndPushCompleted_ComputeStarted ON dbo.UserSecurityPartitionTracker(DotUserId, ComputeAndPushCompleted, ComputeStarted)
+END;
