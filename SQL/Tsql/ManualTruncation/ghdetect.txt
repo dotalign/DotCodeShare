@@ -74,11 +74,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -96,15 +96,15 @@ CREATE TABLE #stdtmproot (
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -126,11 +126,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -150,15 +150,15 @@ WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://
 ;
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -177,11 +177,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -195,15 +195,15 @@ CREATE TABLE #tmpkill (
 );
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -225,11 +225,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -270,15 +270,15 @@ WHERE ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/co
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -297,11 +297,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -316,15 +316,15 @@ JOIN #tmpkill k ON k.Id = t.Id;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -346,11 +346,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -369,15 +369,15 @@ WHERE ex.Id IS NULL;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -399,11 +399,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -423,15 +423,15 @@ CREATE INDEX IX_#stdtmproot_DestId ON #stdtmproot ( DestId );
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -453,11 +453,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -476,15 +476,15 @@ JOIN USERPARTITION_C1.CompanyPreferredNameRoot s ON s.Id = t.Id;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -506,11 +506,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -531,15 +531,15 @@ WHERE ex.Id IS NULL;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -558,11 +558,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -583,15 +583,15 @@ WHERE ex.Id IS NULL;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -610,11 +610,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -636,15 +636,15 @@ JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueDateTime dv 
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -663,11 +663,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -688,15 +688,15 @@ WHERE ex.Id IS NULL;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -715,11 +715,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -741,15 +741,15 @@ WHERE sv.Value IS NULL
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -768,11 +768,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -794,15 +794,15 @@ JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueInt dv ON dv
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -821,11 +821,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -846,15 +846,15 @@ WHERE ex.Id IS NULL;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -873,11 +873,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -899,15 +899,15 @@ WHERE sv.Value IS NULL
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -926,11 +926,11 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -956,15 +956,15 @@ CREATE INDEX IX_#tmpDetritus ON #tmpDetritus(SubjectMd5, NamedGraphId, EntityDef
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -986,11 +986,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -1018,15 +1018,15 @@ WHERE ex.Id IS NULL;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -1048,11 +1048,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -1073,15 +1073,15 @@ JOIN #tmpDetritus t
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -1103,11 +1103,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -1132,15 +1132,15 @@ WHERE d.IsDetritus = 1
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
@@ -1162,11 +1162,11 @@ WHERE Id = @lastRunTrackerId;
 
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
 
 
@@ -1176,14 +1176,14 @@ SET @startTime = GETUTCDATE();
 /**********************************************/
 
 
-DECLARE @result0x6566cb3d817a043c1d9ed658f600d90a TABLE
+-- DECLARE @result0x6566cb3d817a043c1d9ed658f600d90a TABLE
 (
     MaxLastModified datetime,
     LastPushNumRoots int
 );
 
-DECLARE @maxLastModified0x6566cb3d817a043c1d9ed658f600d90a datetime;
-DECLARE @lastPushNumRoots0x6566cb3d817a043c1d9ed658f600d90a int;
+-- DECLARE @maxLastModified0x6566cb3d817a043c1d9ed658f600d90a datetime;
+-- DECLARE @lastPushNumRoots0x6566cb3d817a043c1d9ed658f600d90a int;
 
 INSERT INTO @result0x6566cb3d817a043c1d9ed658f600d90a ( MaxLastModified, LastPushNumRoots )
 SELECT  MAX(r.TimestampUtc), COUNT(t.Id)
@@ -1210,15 +1210,15 @@ WHERE pt.Id = 976;
 
 /**********************************************/
 
-DECLARE @endTime datetime;
+-- DECLARE @endTime datetime;
 SET @endTime = GETUTCDATE();
 
-DECLARE @elapsed int;
+-- DECLARE @elapsed int;
 SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
 
 
 
-DECLARE @lastRunTrackerId int;
+-- DECLARE @lastRunTrackerId int;
 SET @lastRunTrackerId = 
 ( 
   SELECT Id
