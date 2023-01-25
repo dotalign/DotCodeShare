@@ -1,6 +1,17 @@
 begin transaction;
 
--- Sql step:
+DECLARE @stepName varchar(64);
+SET @stepName = 'myStepName';
+DECLARE @userKey nvarchar(128);
+SET @userKey = 'USERNAME@DOMAINNAME.com';
+
+DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
+
+
+DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
 UPDATE t
 SET LastStepStart = GETUTCDATE(),
     LastStepName = @stepName
@@ -10,13 +21,12 @@ WHERE du.UserKeyPlainText = @userKey
   AND t.JobTypeId = 1;
 
 -- Sql step:
-DECLARE @userKeyMd5 binary(16);
+-- DECLARE @userKeyMd5 binary(16);
 SET @userKeyMd5 = 0xaceaad6570f45bff080a75fc00ed769f;
 
 
-DECLARE @startTime datetime;
+-- DECLARE @startTime datetime;
 SET @startTime = GETUTCDATE();
-
 
 
 /**********************************************/
@@ -32,7 +42,7 @@ SET @tagId = (
     JOIN dbo.Team teem ON teem.Id = tag.TeamId
     JOIN dbo.NamedGraph ng ON ng.Id = tag.NamedGraphId
     WHERE teem.TeamNumber = 1
-      AND ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+      AND ng.GraphUri = 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/'
 );
 
 UPDATE pt
@@ -141,11 +151,11 @@ SET @startTime = GETUTCDATE();
 
 INSERT INTO #stdtmproot ( Id, SubjectMd5 )
 SELECT DISTINCT r.Id, r.SubjectMd5
-FROM USERPARTITION_C1.CompanyPreferredNameRoot r
+FROM USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot r
 LEFT JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameRoot exd 
     ON exd.SubjectMd5 = r.SubjectMd5
     AND exd.NamedGraphId = r.NamedGraphId
-WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/' )
+WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/' )
   AND r.TimestampUtc != COALESCE(exd.TimestampUtc, GETUTCDATE())
 ;
 /**********************************************/
@@ -240,18 +250,18 @@ SET @startTime = GETUTCDATE();
 
 ;WITH cte AS ( 
 SELECT DISTINCT cnam_root.SubjectMd5 AS Md5
-FROM USERPARTITION_C1.CompanyPreferredNameRoot cnam_root
-JOIN USERPARTITION_C1.CompanyPreferredNameValueFixedBinary16 cnam_companymd5 ON cnam_companymd5.GraphedEntityRootId = cnam_root.Id AND cnam_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
-JOIN USERPARTITION_C1.PersonJobValueFixedBinary16 job_companymd5 ON job_companymd5.Value = cnam_companymd5.Value AND job_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
-JOIN USERPARTITION_C1.PersonJobRoot job_root ON job_root.Id = job_companymd5.GraphedEntityRootId
-JOIN USERPARTITION_C1.PersonJobValueFixedBinary16 job_personmd5 ON job_personmd5.GraphedEntityRootId = job_root.Id AND job_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
-JOIN USERPARTITION_C1.UserContactStatValueFixedBinary16 ucs_contactmd5 ON ucs_contactmd5.Value = job_personmd5.Value AND ucs_contactmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercontactstat/contactmd5/' )
-JOIN USERPARTITION_C1.UserContactStatRoot ucs_root ON ucs_root.Id = ucs_contactmd5.GraphedEntityRootId
-LEFT JOIN USERPARTITION_C1.UserContactStatValueBit ucs_isrelevant ON ucs_isrelevant.GraphedEntityRootId = ucs_root.Id AND ucs_isrelevant.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercontactstat/isrelevant/' )
+FROM USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot cnam_root
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueFixedBinary16 cnam_companymd5 ON cnam_companymd5.GraphedEntityRootId = cnam_root.Id AND cnam_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.PersonJobValueFixedBinary16 job_companymd5 ON job_companymd5.Value = cnam_companymd5.Value AND job_companymd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/companymd5/' )
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.PersonJobRoot job_root ON job_root.Id = job_companymd5.GraphedEntityRootId
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.PersonJobValueFixedBinary16 job_personmd5 ON job_personmd5.GraphedEntityRootId = job_root.Id AND job_personmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/personjob/personmd5/' )
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.UserContactStatValueFixedBinary16 ucs_contactmd5 ON ucs_contactmd5.Value = job_personmd5.Value AND ucs_contactmd5.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercontactstat/contactmd5/' )
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.UserContactStatRoot ucs_root ON ucs_root.Id = ucs_contactmd5.GraphedEntityRootId
+LEFT JOIN USERNAME_at_DOMAINNAME_dot_com_C1.UserContactStatValueBit ucs_isrelevant ON ucs_isrelevant.GraphedEntityRootId = ucs_root.Id AND ucs_isrelevant.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/usercontactstat/isrelevant/' )
 
-WHERE cnam_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/job/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowperson/' ))
-AND job_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/job/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowperson/' ))
-AND ucs_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/job/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/weknowperson/' ))
+WHERE cnam_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/job/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/weknowperson/' ))
+AND job_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/job/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/weknowperson/' ))
+AND ucs_root.NamedGraphId IN (SELECT Id FROM dbo.NamedGraph WHERE GraphUri IN ( 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/calchelper/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companysummary/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/contactinfo/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/interactionstats/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/job/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personidentity/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personknowscompany/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personknowsperson/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personname/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/personsummary/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/weknowcompany/', 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/weknowperson/' ))
 AND ucs_isrelevant.Value = 1
 
 
@@ -259,11 +269,11 @@ AND ucs_isrelevant.Value = 1
 
 INSERT INTO #tmpkill ( Id )
 SELECT DISTINCT r.Id
-FROM USERPARTITION_C1.CompanyPreferredNameRoot r
+FROM USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot r
 JOIN dbo.NamedGraph ng ON ng.Id = r.NamedGraphId
 LEFT JOIN cte c ON c.Md5 = r.SubjectMd5
 LEFT JOIN #tmpkill ex ON ex.Id = r.Id
-WHERE ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+WHERE ng.GraphUri = 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/'
   AND c.Md5 IS NULL
   AND ex.Id IS NULL;
 
@@ -361,7 +371,7 @@ SET @startTime = GETUTCDATE();
 
 INSERT INTO internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameRoot ( EntityDefinitionId, NamedGraphId, SubjectMd5, EntityKey, SubjectUri, SearchBlob, TimestampUtc, Created )
 SELECT DISTINCT r.EntityDefinitionId, r.NamedGraphId, r.SubjectMd5, r.EntityKey, r.SubjectUri, r.SearchBlob, r.TimestampUtc, r.Created
-FROM USERPARTITION_C1.CompanyPreferredNameRoot r
+FROM USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot r
 JOIN #stdtmproot t ON t.Id = r.Id
 LEFT JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameRoot ex ON ex.SubjectMd5 = r.SubjectMd5
     AND ex.NamedGraphId = r.NamedGraphId
@@ -415,7 +425,7 @@ SET @startTime = GETUTCDATE();
 UPDATE t
 SET DestId = d.Id
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameRoot s ON s.Id = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot s ON s.Id = t.Id
 JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameRoot d ON d.SubjectMd5 = s.SubjectMd5
     AND d.NamedGraphId = s.NamedGraphId;
 
@@ -472,7 +482,7 @@ SET SearchBlob = s.SearchBlob,
     Created = s.Created
 FROM internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameRoot d
 JOIN #stdtmproot t ON t.DestId = d.Id
-JOIN USERPARTITION_C1.CompanyPreferredNameRoot s ON s.Id = t.Id;
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot s ON s.Id = t.Id;
 
 /**********************************************/
 
@@ -522,7 +532,7 @@ SET @startTime = GETUTCDATE();
 INSERT INTO internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueFixedBinary16 ( GraphedEntityRootId, PropertyDefinitionId, Value, Created, LastModified )
 SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.Value, sv.Created, sv.LastModified
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameValueFixedBinary16 sv ON sv.GraphedEntityRootId = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueFixedBinary16 sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
 LEFT JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueFixedBinary16 ex ON ex.GraphedEntityRootId = t.DestId
     AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companymd5/' )
@@ -574,7 +584,7 @@ SET @startTime = GETUTCDATE();
 INSERT INTO internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueRefdEntity ( GraphedEntityRootId, PropertyDefinitionId, RefdSubjectMd5, Created, LastModified )
 SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.RefdSubjectMd5, sv.Created, sv.LastModified
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameValueRefdEntity sv ON sv.GraphedEntityRootId = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueRefdEntity sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companyname/' )
 LEFT JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueRefdEntity ex ON ex.GraphedEntityRootId = t.DestId
     AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/companyname/' )
@@ -628,7 +638,7 @@ SET Value = sv.Value,
     Created = sv.Created,
     LastModified = sv.LastModified
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
 JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueDateTime dv ON dv.GraphedEntityRootId = t.DestId
     AND dv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
@@ -679,7 +689,7 @@ SET @startTime = GETUTCDATE();
 INSERT INTO internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueDateTime ( GraphedEntityRootId, PropertyDefinitionId, Value, Created, LastModified )
 SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.Value, sv.Created, sv.LastModified
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
 LEFT JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueDateTime ex ON ex.GraphedEntityRootId = t.DestId
     AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
@@ -734,7 +744,7 @@ SET Value = NULL,
 FROM #stdtmproot t
 JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueDateTime dv ON dv.GraphedEntityRootId = t.DestId
     AND PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
-LEFT JOIN USERPARTITION_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
+LEFT JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueDateTime sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/currentasof/' )
 WHERE sv.Value IS NULL
   AND dv.Value IS NOT NULL;
@@ -786,7 +796,7 @@ SET Value = sv.Value,
     Created = sv.Created,
     LastModified = sv.LastModified
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
 JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueInt dv ON dv.GraphedEntityRootId = t.DestId
     AND dv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
@@ -837,7 +847,7 @@ SET @startTime = GETUTCDATE();
 INSERT INTO internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueInt ( GraphedEntityRootId, PropertyDefinitionId, Value, Created, LastModified )
 SELECT DISTINCT t.DestId, sv.PropertyDefinitionId, sv.Value, sv.Created, sv.LastModified
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
 LEFT JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueInt ex ON ex.GraphedEntityRootId = t.DestId
     AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
@@ -892,7 +902,7 @@ SET Value = NULL,
 FROM #stdtmproot t
 JOIN internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameValueInt dv ON dv.GraphedEntityRootId = t.DestId
     AND PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
-LEFT JOIN USERPARTITION_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
+LEFT JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameValueInt sv ON sv.GraphedEntityRootId = t.Id
     AND sv.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/companypreferredname/sourcetally/' )
 WHERE sv.Value IS NULL
   AND dv.Value IS NOT NULL;
@@ -944,8 +954,8 @@ SELECT destroot.SubjectMd5, destroot.NamedGraphId, destroot.EntityDefinitionId
 INTO #tmpDetritus
 FROM internal_dot_dotalign_dot_com_teams_1.CompanyPreferredNameRoot destroot
 JOIN dbo.NamedGraph ng ON ng.Id = destroot.NamedGraphId
-    AND ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
-LEFT JOIN USERPARTITION_C1.CompanyPreferredNameRoot srcroot
+    AND ng.GraphUri = 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/'
+LEFT JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot srcroot
     ON srcroot.SubjectMd5 = destroot.SubjectMd5
     AND srcroot.NamedGraphId = destroot.NamedGraphId
 LEFT JOIN #tmpkill k ON k.Id = srcroot.Id
@@ -1126,7 +1136,7 @@ LEFT JOIN #tmpDetritus t
     AND d.NamedGraphId = t.NamedGraphId
     AND d.EntityDefinitionId = t.EntityDefinitionId
 WHERE d.IsDetritus = 1
-  AND ng.GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/'
+  AND ng.GraphUri = 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/'
   AND d.EntityDefinitionId = 52 /* CompanyPreferredName */
   AND t.SubjectMd5 IS NULL;
 
@@ -1176,20 +1186,20 @@ SET @startTime = GETUTCDATE();
 /**********************************************/
 
 
--- DECLARE @result0x6566cb3d817a043c1d9ed658f600d90a TABLE
+DECLARE @result0x6566cb3d817a043c1d9ed658f600d90a TABLE
 (
     MaxLastModified datetime,
     LastPushNumRoots int
 );
 
--- DECLARE @maxLastModified0x6566cb3d817a043c1d9ed658f600d90a datetime;
--- DECLARE @lastPushNumRoots0x6566cb3d817a043c1d9ed658f600d90a int;
+DECLARE @maxLastModified0x6566cb3d817a043c1d9ed658f600d90a datetime;
+DECLARE @lastPushNumRoots0x6566cb3d817a043c1d9ed658f600d90a int;
 
 INSERT INTO @result0x6566cb3d817a043c1d9ed658f600d90a ( MaxLastModified, LastPushNumRoots )
 SELECT  MAX(r.TimestampUtc), COUNT(t.Id)
 FROM #stdtmproot t
-JOIN USERPARTITION_C1.CompanyPreferredNameRoot r ON r.Id = t.Id
-WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/USERPARTITION/meonlycomposite/companyidentity/' );
+JOIN USERNAME_at_DOMAINNAME_dot_com_C1.CompanyPreferredNameRoot r ON r.Id = t.Id
+WHERE r.NamedGraphId = ( SELECT Id FROM dbo.NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/USERNAME_at_DOMAINNAME_dot_com/meonlycomposite/companyidentity/' );
 
 SET @maxLastModified0x6566cb3d817a043c1d9ed658f600d90a = ( SELECT MAX(MaxLastModified) FROM @result0x6566cb3d817a043c1d9ed658f600d90a );
 SET @lastPushNumRoots0x6566cb3d817a043c1d9ed658f600d90a = ( SELECT MAX(LastPushNumRoots) FROM @result0x6566cb3d817a043c1d9ed658f600d90a );
@@ -1236,6 +1246,8 @@ SET LastExecutedStepName = 'CompanyPreferredName',
     LastStepCmdTimeMs = @elapsed,
     TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
 WHERE Id = @lastRunTrackerId;
+
+
 -- Sql step:
 UPDATE t
 SET LastStepComplete = GETUTCDATE()
@@ -1243,5 +1255,6 @@ FROM UserLongRunningJobTracker t
 JOIN DotUser du ON du.Id = t.DotUserId
 WHERE du.UserKeyPlainText = @userKey
   AND t.JobTypeId = 1;
+
   
 rollback transaction;
