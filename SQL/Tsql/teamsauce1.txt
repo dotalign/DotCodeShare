@@ -1,0 +1,302 @@
+begin transaction;
+
+declare @userKey varchar(256);
+set @userKey = 'http://internal.dotalign.com/teams/1/';
+select * from DotUser
+
+/*
+UPDATE t
+SET LastStepStart = GETUTCDATE(),
+    LastStepName = @stepName
+FROM UserLongRunningJobTracker t
+JOIN DotUser du ON du.Id = t.DotUserId
+WHERE du.UserKeyPlainText = @userKey
+  AND t.JobTypeId = 1;
+*/
+
+-- Sql step:
+DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xf21022d627026132c6015bf964b74775;
+
+
+DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Create upsertion temp LastJobEvidenceDaysAgo
+/**********************************************/
+
+CREATE TABLE #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery (
+    RootId int PRIMARY KEY,
+    Value int
+);
+
+CREATE INDEX IX_#upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery_RootId ON #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery (RootId );
+
+/**********************************************/
+
+DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_1_C2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery',
+    LastStepCommand = 'SelfCalc_CreateTemp',
+    LastTargetGraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/',
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+
+
+
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xf21022d627026132c6015bf964b74775;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Selfcalc into temp for LastJobEvidenceDaysAgo
+/**********************************************/
+
+INSERT INTO #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery ( RootId, Value )
+SELECT r.Id,
+    (SELECT CASE WHEN v0.Value IS NULL THEN NULL WHEN v0.Value > GETUTCDATE() THEN 0 ELSE DATEDIFF(day, v0.Value, GETUTCDATE()) END)
+FROM internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeRoot r
+JOIN internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeValueDateTime v0 ON v0.GraphedEntityRootId = r.Id
+    AND v0.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/userknowsemployee/lastjobevidence/' )
+
+LEFT JOIN #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery ex ON ex.RootId = r.Id
+WHERE r.NamedGraphId = ( SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/' )
+  AND v0.Value IS NOT NULL
+  AND ex.RootId IS NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_1_C2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery',
+    LastStepCommand = 'SelfCalc_CalculateIntoTemp',
+    LastTargetGraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/',
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xf21022d627026132c6015bf964b74775;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Upsertion: insert from temp
+/**********************************************/
+
+INSERT INTO internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeValueInt ( 
+    GraphedEntityRootId, 
+    PropertyDefinitionId, 
+    Value, 
+    Created )
+SELECT DISTINCT t.RootId,
+    ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/userknowsemployee/lastjobevidencedaysago/' ),
+    t.Value,
+    @startTime
+FROM #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery t
+LEFT JOIN internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeValueInt ex
+    ON ex.GraphedEntityRootId = t.RootId
+    AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/userknowsemployee/lastjobevidencedaysago/' )
+WHERE ex.Id IS NULL;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_1_C2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery',
+    LastStepCommand = 'SelfCalc_InsertFromTemp',
+    LastTargetGraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/',
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xf21022d627026132c6015bf964b74775;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Upsertion: update to non-null from temp
+/**********************************************/
+
+UPDATE d
+SET Value = t.Value
+FROM #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery t
+JOIN internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeValueInt d
+    ON d.GraphedEntityRootId = t.RootId
+    AND d.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/userknowsemployee/lastjobevidencedaysago/' )
+
+WHERE 
+CASE
+    WHEN t.Value IS NULL THEN 0
+    WHEN d.Value IS NULL THEN 1
+    
+    WHEN d.Value != t.Value THEN 1
+    ELSE 0
+END = 1;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_1_C2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery',
+    LastStepCommand = 'SelfCalc_UpdateSetToValue',
+    LastTargetGraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/',
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+-- DECLARE @userKeyMd5 binary(16);
+SET @userKeyMd5 = 0xf21022d627026132c6015bf964b74775;
+
+
+-- DECLARE @startTime datetime;
+SET @startTime = GETUTCDATE();
+
+
+
+/**********************************************/
+-- Execution step: Upsertion: set null where no temp value
+/**********************************************/
+
+UPDATE d
+SET Value = NULL
+FROM internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeValueInt d
+JOIN internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeRoot r ON r.Id = d.GraphedEntityRootId
+LEFT JOIN #upsertion_LastJobEvidenceDaysAgo_TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery t0 ON t0.RootId = d.GraphedEntityRootId
+
+WHERE r.NamedGraphId = ( SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/' )
+  AND d.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/userknowsemployee/lastjobevidencedaysago/' )
+  AND d.Value IS NOT NULL
+  AND t0.Value IS NULL
+
+
+;
+
+/**********************************************/
+
+-- DECLARE @endTime datetime;
+SET @endTime = GETUTCDATE();
+
+-- DECLARE @elapsed int;
+SET @elapsed = DATEDIFF(ms, @startTime, @endTime);
+
+
+
+-- DECLARE @lastRunTrackerId int;
+SET @lastRunTrackerId = 
+( 
+  SELECT Id
+  FROM UserSecurityPartitionTracker
+  WHERE SecurityPartitionName = 'internal_dot_dotalign_dot_com_teams_1_C2'
+    AND DatabaseName IS NULL
+);
+
+
+
+UPDATE UserSecurityPartitionTracker
+SET LastExecutedStepName = 'TeamUserKnowsEmployeeLastJobEvidenceDaysAgoCalcQuery',
+    LastStepCommand = 'SelfCalc_UpdateSetNull',
+    LastTargetGraphUri = 'http://dotalign.com/graphs/internal_dot_dotalign_dot_com_teams_1/meonlycomposite/personknowsperson/',
+    LastStepCmdTimeMs = @elapsed,
+    TimeSoFarThisRunMs = COALESCE(TimeSoFarThisRunMs, 0) + @elapsed
+WHERE Id = @lastRunTrackerId;
+-- Sql step:
+UPDATE t
+SET LastStepComplete = GETUTCDATE()
+FROM UserLongRunningJobTracker t
+JOIN DotUser du ON du.Id = t.DotUserId
+WHERE du.UserKeyPlainText = @userKey
+  AND t.JobTypeId = 1;
+
+rollback transaction;
