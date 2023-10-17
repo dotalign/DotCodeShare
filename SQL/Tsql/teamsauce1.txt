@@ -1,4 +1,6 @@
 begin transaction;
+declare @dt datetime;
+set @dt = getutcdate();
 
 declare @userKey varchar(256);
 set @userKey = 'http://internal.dotalign.com/teams/1/';
@@ -92,6 +94,9 @@ WHERE r.NamedGraphId = ( SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dota
   AND v0.Value IS NOT NULL
   AND ex.RootId IS NULL;
 
+select 'a: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
+
 /**********************************************/
 
 -- DECLARE @endTime datetime;
@@ -129,6 +134,9 @@ SET @userKeyMd5 = 0xf21022d627026132c6015bf964b74775;
 SET @startTime = GETUTCDATE();
 
 
+select 'b: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
+
 
 /**********************************************/
 -- Execution step: Upsertion: insert from temp
@@ -148,6 +156,10 @@ LEFT JOIN internal_dot_dotalign_dot_com_teams_1_C2.UserKnowsEmployeeValueInt ex
     ON ex.GraphedEntityRootId = t.RootId
     AND ex.PropertyDefinitionId = ( SELECT Id FROM PropertyDefinition WHERE Uri = 'http://ns.dotalign.com/schemas/distilled/userknowsemployee/lastjobevidencedaysago/' )
 WHERE ex.Id IS NULL;
+
+
+select 'c: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
 
 /**********************************************/
 
@@ -187,6 +199,9 @@ SET @startTime = GETUTCDATE();
 
 
 
+select 'd: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
+
 /**********************************************/
 -- Execution step: Upsertion: update to non-null from temp
 /**********************************************/
@@ -206,6 +221,10 @@ CASE
     WHEN d.Value != t.Value THEN 1
     ELSE 0
 END = 1;
+
+
+select 'e: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
 
 /**********************************************/
 
@@ -245,6 +264,9 @@ SET @startTime = GETUTCDATE();
 
 
 
+select 'f: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
+
 /**********************************************/
 -- Execution step: Upsertion: set null where no temp value
 /**********************************************/
@@ -262,6 +284,11 @@ WHERE r.NamedGraphId = ( SELECT Id FROM NamedGraph WHERE GraphUri = 'http://dota
 
 
 ;
+
+
+
+select 'g: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
 
 /**********************************************/
 
@@ -298,5 +325,9 @@ FROM UserLongRunningJobTracker t
 JOIN DotUser du ON du.Id = t.DotUserId
 WHERE du.UserKeyPlainText = @userKey
   AND t.JobTypeId = 1;
+
+
+select 'h: ' + cast(datediff(ms, @dt, GETUTCDATE()) as varchar(50));
+set @dt = GETUTCDATE();
 
 rollback transaction;
