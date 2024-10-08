@@ -1,0 +1,250 @@
+/**********************************/
+-- IMPORTANT!!!!!!!!
+-- Replace 'vince_at_dotalign_dot_com' with the actual security partition per user
+	-- example:
+	-- SELECT * FROM DotUser WHERE UserKeyPlainText = 'vince@dotalign.com';
+	-- returns vince_at_dotalign_dot_com
+-- AND confirm the team number for internal_dot_dotalign_dot_com_teams_1_C1
+	-- teams_1 is for team number 1
+/**********************************/
+/**********************************/
+-- User-selected Query Parameters
+/**********************************/
+DECLARE @minDate datetime;
+SET @minDate = '2024-09-01';
+
+DECLARE @maxDate datetime;
+SET @maxDate = '2024-09-30';
+
+/**********************************/
+-- Declare Relevant IDs
+/**********************************/
+-- entities
+DECLARE @calMeetingEntId int;
+SET @calMeetingEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'CalendarMeeting' );
+
+DECLARE @calParticipantEntId int;
+SET @calParticipantEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'CalendarMeetingParticipant' );
+
+DECLARE @roleEntId int;
+SET @roleEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'AddresseeRole' );
+
+DECLARE @emailAddressEntId int;
+SET @emailAddressEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'EmailAddress' );
+
+DECLARE @personCompleteNameEntId int;
+SET @personCompleteNameEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'PersonCompleteName' );
+
+DECLARE @domainUrlEntId int;
+SET @domainUrlEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'DomainUrl' );
+
+DECLARE @personSummaryEntId int;
+SET @personSummaryEntId = ( SELECT Id FROM EntityDefinition WHERE Name = 'PersonSummary' );
+
+-- meeting properties
+DECLARE @calGlobalKeyPropId int;
+SET @calGlobalKeyPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'CalGlobalKey' AND EntityDefinitionId = @calMeetingEntId );
+
+DECLARE @calStartPropId int;
+SET @calStartPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'StartDateTime' AND EntityDefinitionId = @calMeetingEntId );
+
+DECLARE @calSubjectPropId int;
+SET @calSubjectPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'Subject' AND EntityDefinitionId = @calMeetingEntId );
+
+-- participant properties
+DECLARE @calParRefMtgPropId int;
+SET @calParRefMtgPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'CalendarMeeting' AND EntityDefinitionId = @calParticipantEntId );
+
+DECLARE @calParRefEmailPropId int;
+SET @calParRefEmailPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'EmailAddress' AND EntityDefinitionId = @calParticipantEntId );
+
+DECLARE @calParRefNamePropId int;
+SET @calParRefNamePropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'DisplayName' AND EntityDefinitionId = @calParticipantEntId );
+
+-- emailaddress properties
+DECLARE @emailAddrTextPropId int;
+SET @emailAddrTextPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'AddressText' AND EntityDefinitionId = @emailAddressEntId );
+
+DECLARE @emailAddrIdMd5PropId int;
+SET @emailAddrIdMd5PropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'IdentifierMd5' AND EntityDefinitionId = @emailAddressEntId );
+
+DECLARE @emailRefBaseDomainPropId int;
+SET @emailRefBaseDomainPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'BaseDomain' AND EntityDefinitionId = @emailAddressEntId );
+
+-- personcompletename properties
+DECLARE @personNameTextPropId int;
+SET @personNameTextPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'StandardizedName' AND EntityDefinitionId = @personCompleteNameEntId );
+
+-- domainurl properties
+DECLARE @domainUrlTextPropId int;
+SET @domainUrlTextPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'UrlText' AND EntityDefinitionId = @domainUrlEntId );
+
+-- personsummary properties
+DECLARE @personMd5PropId int;
+SET @personMd5PropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'PersonMd5' AND EntityDefinitionId = @personSummaryEntId );
+
+DECLARE @personTitlePropId int;
+SET @personTitlePropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'BestJobTitleText' AND EntityDefinitionId = @personSummaryEntId );
+
+DECLARE @personCoNamePropId int;
+SET @personCoNamePropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'BestJobResolvedCoName' AND EntityDefinitionId = @personSummaryEntId );
+
+
+-- roles
+DECLARE @fromRoleId int;
+SET @fromRoleId = ( 
+	SELECT eec.Id 
+	FROM EntityDefinitionEnumChoice eec
+	WHERE eec.Name = 'From' 
+	AND eec.EntityDefinitionId = @roleEntId 
+	);
+
+-- table variables
+DECLARE @meeting TABLE (
+  meeting_root_id int,
+  da_meeting_key binary(16),
+  cal_global_key nvarchar(512),
+  start_date datetime,
+  subject nvarchar(200),
+  organizer_email_address nvarchar(256)
+);
+
+DECLARE @participant TABLE (
+  paticipant_root_id int,
+  da_meeting_key binary(16),
+  email_address nvarchar(256),
+  email_address_md5 binary(16),
+  email_domain nvarchar(256),
+  name nvarchar(256),
+  best_job_title nvarchar(256),
+  best_company_name nvarchar(256)
+);
+
+
+/**********************************/
+-- Meeting insertion to table
+/**********************************/
+
+INSERT INTO @meeting ( meeting_root_id, da_meeting_key, start_date )
+SELECT	cmr.Id,
+		cmr.SubjectMd5 AS DotAlignMeetingKey,
+		cdt.Value AS MeetingStartTime
+FROM vince_at_dotalign_dot_com.CalendarMeetingRoot cmr
+JOIN vince_at_dotalign_dot_com.CalendarMeetingValueDateTime cdt ON cdt.GraphedEntityRootId = cmr.Id
+	AND cdt.PropertyDefinitionId = @calStartPropId
+WHERE cdt.Value BETWEEN @minDate AND @maxDate
+;
+
+/**********************************/
+-- Meeting.CalGlobalKey
+/**********************************/
+UPDATE m
+SET cal_global_key = v.Value
+FROM @meeting m
+JOIN vince_at_dotalign_dot_com.CalendarMeetingValueResourceKey v ON v.GraphedEntityRootId = m.meeting_root_id
+	AND v.PropertyDefinitionId = @calGlobalKeyPropId
+;
+
+/**********************************/
+-- Meeting.Subject
+/**********************************/
+UPDATE m
+SET subject = v.Value
+FROM @meeting m
+JOIN vince_at_dotalign_dot_com.CalendarMeetingValueNvarchar256 v ON v.GraphedEntityRootId = m.meeting_root_id
+	AND v.PropertyDefinitionId = @calSubjectPropId
+;
+
+/**********************************/
+-- Meeting.Organizer Email Address
+/**********************************/
+UPDATE m
+SET organizer_email_address = eav.Value
+FROM @meeting m
+JOIN vince_at_dotalign_dot_com.CalendarMeetingParticipantValueRefdEntity parfm ON parfm.RefdSubjectMd5 = m.da_meeting_key
+	AND parfm.PropertyDefinitionId = @calParRefMtgPropId
+JOIN vince_at_dotalign_dot_com.CalendarMeetingParticipantValueRefdEntity parfema ON parfema.GraphedEntityRootId = parfm.GraphedEntityRootId
+	AND parfema.PropertyDefinitionId = @calParRefEmailPropId
+JOIN unowned.EmailAddressRoot ear ON ear.SubjectMd5 = parfema.RefdSubjectMd5
+JOIN vince_at_dotalign_dot_com.EmailAddressValueNvarchar256 eav ON eav.GraphedEntityRootId = ear.Id
+	AND eav.PropertyDefinitionId = @emailAddrTextPropId
+;
+
+/**********************************/
+-- Participant insertion to table
+/**********************************/
+INSERT INTO @participant ( paticipant_root_id, da_meeting_key )
+SELECT parf1.GraphedEntityRootId, m.da_meeting_key
+FROM vince_at_dotalign_dot_com.CalendarMeetingParticipantValueRefdEntity parf1
+JOIN @meeting m ON m.da_meeting_key = parf1.RefdSubjectMd5
+WHERE parf1.PropertyDefinitionId = @calParRefMtgPropId
+;
+
+/**********************************/
+-- Participant.EmailAddress
+/**********************************/
+UPDATE tpar
+SET email_address = eav.Value,
+	email_address_md5 = eab.Value
+FROM @participant tpar
+JOIN vince_at_dotalign_dot_com.CalendarMeetingParticipantValueRefdEntity par ON par.GraphedEntityRootId = tpar.paticipant_root_id
+	AND par.PropertyDefinitionId = @calParRefEmailPropId
+JOIN unowned.EmailAddressRoot ear ON ear.SubjectMd5 = par.RefdSubjectMd5
+JOIN vince_at_dotalign_dot_com.EmailAddressValueNvarchar256 eav ON eav.GraphedEntityRootId = ear.Id
+	AND eav.PropertyDefinitionId = @emailAddrTextPropId
+JOIN unowned.EmailAddressValueFixedBinary16 eab ON eab.GraphedEntityRootId = ear.Id
+	AND eab.PropertyDefinitionId = @emailAddrIdMd5PropId;
+
+/**********************************/
+-- Participant.EmailDomain
+/**********************************/
+UPDATE tpar
+SET email_domain = durlv.Value
+FROM @participant tpar
+JOIN unowned.EmailAddressValueFixedBinary16 eab ON eab.Value = tpar.email_address_md5
+	AND eab.PropertyDefinitionId = @emailAddrIdMd5PropId
+JOIN unowned.EmailAddressValueRefdEntity rf ON rf.GraphedEntityRootId = eab.GraphedEntityRootId
+	AND rf.PropertyDefinitionId = @emailRefBaseDomainPropId
+JOIN unowned.DomainUrlRoot durlr ON durlr.SubjectMd5 = rf.RefdSubjectMd5
+JOIN unowned.DomainUrlValueNvarchar256 durlv ON durlv.GraphedEntityRootId = durlr.Id
+	AND durlv.PropertyDefinitionId = @domainUrlTextPropId;
+
+
+/**********************************/
+-- Participant.DisplayName
+/**********************************/
+UPDATE tpar
+SET name = pcnv.Value
+FROM @participant tpar
+JOIN vince_at_dotalign_dot_com.CalendarMeetingParticipantValueRefdEntity par ON par.GraphedEntityRootId = tpar.paticipant_root_id
+	AND par.PropertyDefinitionId = @calParRefNamePropId
+JOIN unowned.PersonCompleteNameRoot pcnr ON pcnr.SubjectMd5 = par.RefdSubjectMd5
+JOIN vince_at_dotalign_dot_com.PersonCompleteNameValueNvarchar256 pcnv ON pcnv.GraphedEntityRootId = pcnr.Id
+	AND pcnv.PropertyDefinitionId = @personNameTextPropId;
+
+/**********************************/
+-- Participant -- BestJobTitle
+/**********************************/
+UPDATE tpar
+SET best_job_title = psumv.Value
+FROM @participant tpar
+JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonMasterMeOnlyComposite m ON m.MemberHighMd5 = tpar.email_address_md5
+JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonSummaryValueFixedBinary16 psumb ON psumb.Value = m.AnchorLowMd5
+	AND psumb.PropertyDefinitionId = @personMd5PropId
+JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonSummaryValueNvarchar128 psumv ON psumv.GraphedEntityRootId = psumb.GraphedEntityRootId
+	AND psumv.PropertyDefinitionId = @personTitlePropId;
+
+/**********************************/
+-- Participant -- BestCompanyName
+/**********************************/
+UPDATE tpar
+SET best_company_name = psumv.Value
+FROM @participant tpar
+JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonMasterMeOnlyComposite m ON m.MemberHighMd5 = tpar.email_address_md5
+JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonSummaryValueFixedBinary16 psumb ON psumb.Value = m.AnchorLowMd5
+	AND psumb.PropertyDefinitionId = @personMd5PropId
+JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonSummaryValueNvarchar128 psumv ON psumv.GraphedEntityRootId = psumb.GraphedEntityRootId
+	AND psumv.PropertyDefinitionId = @personCoNamePropId;
+
+SELECT * FROM @meeting;
+SELECT * from @participant;
