@@ -61,6 +61,9 @@ SET @calParRefEmailPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'Em
 DECLARE @calParRefNamePropId int;
 SET @calParRefNamePropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'DisplayName' AND EntityDefinitionId = @calParticipantEntId );
 
+DECLARE @calParRolePropId int;
+SET @calParRolePropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'Role' AND EntityDefinitionId = @calParticipantEntId );
+
 -- emailaddress properties
 DECLARE @emailAddrTextPropId int;
 SET @emailAddrTextPropId = ( SELECT Id FROM PropertyDefinition WHERE Name = 'AddressText' AND EntityDefinitionId = @emailAddressEntId );
@@ -168,6 +171,9 @@ JOIN vince_at_dotalign_dot_com.CalendarMeetingParticipantValueRefdEntity parfema
 JOIN unowned.EmailAddressRoot ear ON ear.SubjectMd5 = parfema.RefdSubjectMd5
 JOIN vince_at_dotalign_dot_com.EmailAddressValueNvarchar256 eav ON eav.GraphedEntityRootId = ear.Id
 	AND eav.PropertyDefinitionId = @emailAddrTextPropId
+JOIN vince_at_dotalign_dot_com.CalendarMeetingParticipantValueEnumChoice rolerf ON rolerf.GraphedEntityRootId = parfm.GraphedEntityRootId
+    AND rolerf.PropertyDefinitionId = @calParRolePropId
+WHERE rolerf.EntityDefinitionEnumChoiceId = @fromRoleId
 ;
 
 /**********************************/
