@@ -18,6 +18,7 @@ SET @maxDate = '2024-09-30';
 
 /**********************************/
 -- Declare Relevant IDs
+-- (unlike above, these are not input variables; no editing required)
 /**********************************/
 -- entities
 DECLARE @calMeetingEntId int;
@@ -252,5 +253,12 @@ JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonSummaryValueFixedBinary16 ps
 JOIN internal_dot_dotalign_dot_com_teams_1_C1.PersonSummaryValueNvarchar128 psumv ON psumv.GraphedEntityRootId = psumb.GraphedEntityRootId
 	AND psumv.PropertyDefinitionId = @personCoNamePropId;
 
-SELECT * FROM @meeting;
-SELECT * from @participant;
+SELECT	m.*,
+		p.email_address,
+		p.email_address_md5,
+		p.email_domain,
+		p.name,
+		p.best_job_title,
+		p.best_company_name
+FROM @meeting m
+JOIN @participant p ON p.da_meeting_key = m.da_meeting_key;
