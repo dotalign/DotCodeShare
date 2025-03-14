@@ -1,6 +1,7 @@
-# Programmatically loading a Company or Person profile inside the DotAlign browser extension
+# Programmatically Loading a Company or Person Profile Inside the DotAlign Browser Extension
 
-The DotAlign browser extension can be installed from [here](https://chromewebstore.google.com/detail/dotalign/ofahkjbhcadlldpoahogjikmdoibbejh?hl=en-US&pli=1)
+The DotAlign browser extension can be installed from 
+<a href="https://chromewebstore.google.com/detail/dotalign/ofahkjbhcadlldpoahogjikmdoibbejh?hl=en-US&pli=1" target="_blank" rel="noopener noreferrer">here</a>.
 
 The function `loadInDotAlign`, defined in the file `loadInDotAlign.js` allows you to specify a company or person and have their profile loaded inside the DotAlign sidebar. Once this method is available inside your code base, it can be used from whereever appropriate to open the DotAlign sidebar and load up a specific profile inside it.  
 
