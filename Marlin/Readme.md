@@ -1,3 +1,5 @@
+#Programmaticlaly loading a profile inside the DotAlign sidebar 
+
 The function loadInDotAlign allows you to specify a company or person and have their profile loaded inside the DotAlign sidebar. 
 
 The following is an example of how it should be called: 
