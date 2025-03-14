@@ -1,20 +1,20 @@
 const loadInDotAlign = (relativePath) => {
-    const iframe = document.querySelector('#dotalignEmbedApp')
+    const iFrame = document.querySelector('#dotalignEmbedApp')
     
-    if (!iframe) {
+    if (!iFrame) {
       console.error('The DotAlign iFrame was not found');
       return;
     }
   
-    const { origin } = new URL(iframe.src);
+    const { origin } = new URL(iFrame.src);
 
-    if (iframe.src === `${origin}/blank.html` || iframe.src.indexOf('options.html') > -1) {
-      const parentNode = document.querySelector('.dotalign-iframe')
-      const newIframe = iframe.cloneNode()
-      newIframe.src = `${origin}/${relativePath}`
-      parentNode.replaceChild(newIframe, iframe)
+    if (iFrame.src === `${origin}/blank.html` || iFrame.src.indexOf('options.html') > -1) {
+      const parentNode = document.querySelector('.dotalign-iFrame')
+      const newIFrame = iFrame.cloneNode()
+      newIFrame.src = `${origin}/${relativePath}`
+      parentNode.replaceChild(newIFrame, iFrame)
     } else {
-      iframe.contentWindow.postMessage(`url:/${relativePath}`, iframe.src)
+      iFrame.contentWindow.postMessage(`url:/${relativePath}`, iFrame.src)
     }
     
     window.postMessage('da_open', '*');
