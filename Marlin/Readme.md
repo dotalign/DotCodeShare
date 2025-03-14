@@ -1,6 +1,6 @@
 # Programmatically loading a profile inside the DotAlign sidebar
 
-The function `loadInDotAlign`, defined in the file `loadInDotAlign.js` allows you to specify a company or person and have their profile loaded inside the DotAlign sidebar. Once this method is available inside your code base, it can be used from whereever appropriate to open the DotALign sidebar and open a specific profile inside it.  
+The function `loadInDotAlign`, defined in the file `loadInDotAlign.js` allows you to specify a company or person and have their profile loaded inside the DotAlign sidebar. Once this method is available inside your code base, it can be used from whereever appropriate to open the DotAlign sidebar and load up a specific profile inside it.  
 
 ## Usage
 
