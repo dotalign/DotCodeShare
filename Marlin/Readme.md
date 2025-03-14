@@ -1,4 +1,4 @@
-# Programmatically Loading a Company or Person Profile Inside the DotAlign Browser Extension
+# Programmatically loading a Company or Person profile inside the DotAlign browser extension
 
 The DotAlign browser extension can be installed from 
 <a href="https://chromewebstore.google.com/detail/dotalign/ofahkjbhcadlldpoahogjikmdoibbejh?hl=en-US&pli=1" target="_blank" rel="noopener noreferrer">here</a>.
