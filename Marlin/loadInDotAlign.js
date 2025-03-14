@@ -1,5 +1,6 @@
 const loadInDotAlign = (relativePath) => {
     const iframe = document.querySelector('#dotalignEmbedApp')
+    
     if (!iframe) {
       console.error('The DotAlign iFrame was not found');
       return;
