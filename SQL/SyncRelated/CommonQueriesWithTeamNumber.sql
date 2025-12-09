@@ -1,6 +1,7 @@
 /*
 =====================================================================
- Query 1: Find all introducers for a contact (identified via email)
+ Query 1: Which colleagues know a contact (identified via email 
+		  address) and how well?
 =====================================================================
 */
 SELECT
@@ -31,7 +32,8 @@ ORDER BY ci.relationship_score DESC
 
 /*
 =====================================================================
- Query 2: Find all introducers for a company (identified via domain)
+ Query 2: Which colleagues know a company (identified by website) and 
+		  how well?
 =====================================================================
 */
 SELECT
@@ -62,10 +64,10 @@ ORDER BY ci.relationship_score DESC
 
 /*
 =====================================================================
- Query 3: What are all the relationships of one of our employees, at 
-		  an external firm (specified by the firm's domain)? Order by 
-		  strongest relationship score.
- ====================================================================
+ Query 3: What are all the relationships of one of our colleagues, 
+		  at a firm specified by its domain (ordered by relationship 
+		  score)?
+ ==============================================================
 */
 SELECT
     c.contact_id,
