@@ -77,6 +77,6 @@ FROM contact_active AS c
 	INNER JOIN contact_job_active cj ON cj.contact_id = c.contact_id
 	INNER JOIN company_active com ON com.company_id = cj.company_id
 	INNER JOIN company_url_active cu ON cu.company_id = com.company_id
-WHERE cu.url_text = 'evercore.com'
-	AND col.email_address = 'jaspreet@dotalign.com'
+WHERE cu.url_text = 'dotalign.com'
+	AND col.email_address = 'ourcolleague@ourfirm.com'
 ORDER BY ci.relationship_score DESC
