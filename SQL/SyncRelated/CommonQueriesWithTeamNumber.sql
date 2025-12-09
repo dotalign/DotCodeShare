@@ -1,15 +1,3 @@
-/* 
-=====================================================================
- Initialize Active Views
- --------------------------------------------------------------------
- Run this once to generate the *_active views for the desired team.
- This ensures queries automatically filter by team_number and is_deleted.
- 
-     EXEC dbo.CreateActiveViews @teamNumber = 1;
-
-=====================================================================
-*/
-
 /*
 =====================================================================
  Query 1: Find all introducers for a contact (identified via email)
@@ -23,14 +11,22 @@ SELECT
     col.email_address,
     ci.relationship_score,
     ci.latest_meeting_date
-FROM contact_active AS c
-    INNER JOIN contact_email_address_active AS cea 
+FROM contact AS c
+    INNER JOIN contact_email_address AS cea 
         ON cea.contact_id = c.contact_id
-    INNER JOIN contact_introducer_active AS ci 
+    INNER JOIN contact_introducer AS ci 
         ON ci.contact_id = c.contact_id
-    INNER JOIN colleague_active AS col
+    INNER JOIN colleague AS col
         ON col.colleague_id = ci.colleague_id
 WHERE cea.email_address_text = 'jaspreet@dotalign.com'
+AND c.team_number = 1 
+AND cea.team_number = 1
+AND ci.team_number = 1
+AND col.team_number = 1
+AND ci.is_deleted = 0
+AND cea.is_deleted = 0
+AND ci.is_deleted = 0
+AND col.is_deleted = 0
 ORDER BY ci.relationship_score DESC
 
 /*
@@ -46,14 +42,22 @@ SELECT
     col.email_address,
     ci.relationship_score,
     ci.latest_meeting_date
-FROM company_active AS c
-    INNER JOIN company_url_active AS cu
+FROM company AS c
+    INNER JOIN company_url AS cu
         ON cu.company_id = c.company_id
-    INNER JOIN company_introducer_active AS ci
+    INNER JOIN company_introducer AS ci
         ON ci.company_id = c.company_id
-    INNER JOIN colleague_active AS col
+    INNER JOIN colleague AS col
         ON col.colleague_id = ci.colleague_id
 WHERE cu.url_text = 'dotalign.com'
+AND c.team_number = 1 
+AND cu.team_number = 1
+AND ci.team_number = 1
+AND col.team_number = 1
+AND ci.is_deleted = 0
+AND cu.is_deleted = 0
+AND ci.is_deleted = 0
+AND col.is_deleted = 0
 ORDER BY ci.relationship_score DESC
 
 /*
@@ -71,12 +75,24 @@ SELECT
     col.email_address,
     ci.relationship_score,
     ci.latest_meeting_date
-FROM contact_active AS c
-    INNER JOIN contact_introducer_active AS ci ON ci.contact_id = c.contact_id
-    INNER JOIN colleague_active AS col ON col.colleague_id = ci.colleague_id
-	INNER JOIN contact_job_active cj ON cj.contact_id = c.contact_id
-	INNER JOIN company_active com ON com.company_id = cj.company_id
-	INNER JOIN company_url_active cu ON cu.company_id = com.company_id
-WHERE cu.url_text = 'evercore.com'
-	AND col.email_address = 'jaspreet@dotalign.com'
+FROM contact AS c
+    INNER JOIN contact_introducer AS ci ON ci.contact_id = c.contact_id
+    INNER JOIN colleague AS col ON col.colleague_id = ci.colleague_id
+	INNER JOIN contact_job cj ON cj.contact_id = c.contact_id
+	INNER JOIN company com ON com.company_id = cj.company_id
+	INNER JOIN company_url cu ON cu.company_id = com.company_id
+WHERE cu.url_text = 'dotalign.com'
+	AND col.email_address = 'ourcolleague@ourfirm.com'
+AND c.team_number = 1 
+AND ci.team_number = 1
+AND col.team_number = 1
+AND cj.team_number = 1
+AND com.team_number = 1
+AND cu.team_number = 1
+AND c.is_deleted = 0 
+AND ci.is_deleted = 0
+AND col.is_deleted = 0
+AND cj.is_deleted = 0
+AND com.is_deleted = 0
+AND cu.is_deleted = 0
 ORDER BY ci.relationship_score DESC
