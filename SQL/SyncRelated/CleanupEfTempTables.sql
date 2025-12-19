@@ -18,7 +18,7 @@ BEGIN
     ------------------------------------------------------------------
     -- Header
     ------------------------------------------------------------------
-    RAISERROR('=== CleanupEfTempTables started ===', 0, 1) WITH NOWAIT;
+    RAISERROR('=== CleanupEFTempTables started ===', 0, 1) WITH NOWAIT;
     RAISERROR('Dry run mode: %d', 0, 1, @dryRunInt) WITH NOWAIT;
 
     IF @schemaName IS NOT NULL
@@ -115,11 +115,11 @@ BEGIN
     DECLARE @durationMs INT =
         DATEDIFF(MILLISECOND, @startTime, SYSUTCDATETIME());
 
-    RAISERROR('=== CleanupEfTempTables summary ===', 0, 1) WITH NOWAIT;
+    RAISERROR('=== CleanupEFTempTables summary ===', 0, 1) WITH NOWAIT;
     RAISERROR('Dry run mode        : %d', 0, 1, @dryRunInt) WITH NOWAIT;
     RAISERROR('Tables matched      : %d', 0, 1, @candidateCount) WITH NOWAIT;
     RAISERROR('Tables dropped      : %d', 0, 1, @executedCount) WITH NOWAIT;
     RAISERROR('Execution time (ms) : %d', 0, 1, @durationMs) WITH NOWAIT;
-    RAISERROR('=== CleanupEfTempTables finished ===', 0, 1) WITH NOWAIT;
+    RAISERROR('=== CleanupEFTempTables finished ===', 0, 1) WITH NOWAIT;
 END;
 GO
