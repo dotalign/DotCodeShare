@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE dbo.CleanupEfTempTables
+CREATE OR ALTER PROCEDURE dbo.CleanupEFTempTables
 (
     @dryRun BIT = 1,                 -- 1 = preview only, 0 = actually drop
     @schemaName SYSNAME = 'dbo',     -- NULL = all schemas
@@ -97,7 +97,7 @@ BEGIN
     ------------------------------------------------------------------
     IF @dryRun = 1
     BEGIN
-        RAISERROR('Dry run enabled — no tables were dropped.', 0, 1) WITH NOWAIT;
+        RAISERROR('Dry run enabled â€” no tables were dropped.', 0, 1) WITH NOWAIT;
     END
     ELSE
     BEGIN
