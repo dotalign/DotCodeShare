@@ -10,8 +10,13 @@
       2. Run the whole file (one result set per query), or highlight
          the DECLARE block together with the one query you want.
 
-    Relationship scores, counts and dates are aggregates as of
-    the last sync (valid_as_of).
+    Notes:
+      - Relationship scores, counts and dates are aggregates as of
+        the last sync (valid_as_of). They are not recounted here.
+      - In lists of meeting attendees, people are shown by email address,
+        or by name when there is no address.
+      - Queries 5 to 10 use STRING_AGG, which needs SQL Server 2017 or
+        later (or Azure SQL).
     ===================================================================== */
 
 DECLARE @TeamNumber     int           = 1;
@@ -20,6 +25,7 @@ DECLARE @CompanyWebsite nvarchar(256) = 'example.com';            -- Queries 2, 
 DECLARE @ColleagueEmail nvarchar(256) = 'colleague@ourfirm.com';  -- Query 3
 DECLARE @MonthsBack     int           = 12;                       -- Queries 7 to 10
 DECLARE @BucketSize     varchar(5)    = 'week';                   -- Queries 7 to 10: 'week' or 'month'
+
 
 /*  ---------------------------------------------------------------------
     Query 1: Which colleagues know a contact, and how well?
@@ -276,12 +282,16 @@ WHERE contact.team_number = @TeamNumber
 ORDER BY
     relationship.interaction_count DESC;
 
+
 /*  ---------------------------------------------------------------------
     Query 5: Every meeting with a contact
 
     The contact is found by one email address, and a meeting counts if
     any of the contact's addresses is on the participant list.
     Most recent first.
+
+    The sync only holds meetings inside its window, which defaults to
+    two years back and three months ahead.
     --------------------------------------------------------------------- */
 
 WITH contact_addresses AS
@@ -324,7 +334,7 @@ SELECT
     meeting.is_cancelled,
 
     -- Which of our colleagues were there
-    colleagues_present.names            AS colleagues_present,
+    colleagues_present.people           AS colleagues_present,
 
     -- Identifiers, for finding the meeting elsewhere
     meeting.meeting_id,
@@ -335,11 +345,14 @@ FROM dbo.meetings AS meeting
     JOIN contact_meetings
         ON contact_meetings.meeting_id = meeting.meeting_id
 
-    -- Colleagues on the participant list, as one comma-separated value
+    -- Colleagues on the participant list, as one comma-separated value.
+    -- Email address where there is one, otherwise the name.
     OUTER APPLY
     (
         SELECT
-            STRING_AGG(colleague.name, ', ') AS names
+            STRING_AGG(CAST(COALESCE(participant.email_address, colleague.name) AS nvarchar(max)), ', ')
+                WITHIN GROUP (ORDER BY participant.email_address)
+                AS people
         FROM dbo.meeting_participants AS participant
             JOIN dbo.colleague AS colleague
                 ON  colleague.team_number   = participant.team_number
@@ -364,6 +377,9 @@ ORDER BY
     The company is found by one website, and a meeting counts if anyone
     on the participant list belongs to any of the company's websites.
     Most recent first.
+
+    The sync only holds meetings inside its window, which defaults to
+    two years back and three months ahead.
     --------------------------------------------------------------------- */
 
 WITH company_websites AS
@@ -406,8 +422,8 @@ SELECT
     meeting.is_cancelled,
 
     -- Who was there, from their side and from ours
-    company_attendees.names             AS company_attendees,
-    colleagues_present.names            AS colleagues_present,
+    company_attendees.people            AS company_attendees,
+    colleagues_present.people           AS colleagues_present,
 
     -- Identifiers, for finding the meeting elsewhere
     meeting.meeting_id,
@@ -418,11 +434,14 @@ FROM dbo.meetings AS meeting
     JOIN company_meetings
         ON company_meetings.meeting_id = meeting.meeting_id
 
-    -- People from the company, by display name (email if there is none)
+    -- People from the company.
+    -- Email address where there is one, otherwise the name.
     OUTER APPLY
     (
         SELECT
-            STRING_AGG(COALESCE(participant.display_name, participant.email_address), ', ') AS names
+            STRING_AGG(CAST(COALESCE(participant.email_address, participant.display_name) AS nvarchar(max)), ', ')
+                WITHIN GROUP (ORDER BY participant.email_address)
+                AS people
         FROM dbo.meeting_participants AS participant
             JOIN company_websites
                 ON company_websites.url_text = participant.company_website
@@ -431,11 +450,13 @@ FROM dbo.meetings AS meeting
           AND ISNULL(participant.is_deleted, 0) = 0
     ) AS company_attendees
 
-    -- Colleagues on the participant list, as one comma-separated value
+    -- Our colleagues on the participant list, the same way
     OUTER APPLY
     (
         SELECT
-            STRING_AGG(colleague.name, ', ') AS names
+            STRING_AGG(CAST(COALESCE(participant.email_address, colleague.name) AS nvarchar(max)), ', ')
+                WITHIN GROUP (ORDER BY participant.email_address)
+                AS people
         FROM dbo.meeting_participants AS participant
             JOIN dbo.colleague AS colleague
                 ON  colleague.team_number   = participant.team_number
@@ -453,14 +474,23 @@ WHERE meeting.team_number = @TeamNumber
 ORDER BY
     meeting.start_date_time DESC;
 
+
 /*  ---------------------------------------------------------------------
     Query 7: Meetings with a contact over time, and who was there
 
     One row per week or month (@BucketSize), going back @MonthsBack
-    months. Each row has the number of meetings and the colleagues who
-    attended, for example "Alice (3), Bob (2)". Buckets with no meetings
-    still appear, with a count of zero.
+    months. Each row has:
+      - meeting_count:          meetings with the contact in that bucket
+      - colleagues:             our DotAlign contributors who attended
+      - internal_participants:  other people from our firm
+      - external_participants:  everyone outside our firm, the contact
+                                included
+    People are listed most frequent first as "email (meetings)", for
+    example "alice@ourfirm.com (3), bob@ourfirm.com (2)", or by name
+    when there is no address. Buckets with no meetings still appear,
+    with a count of zero.
 
+    - "Our firm" means the email domains our colleagues use.
     - Weeks start on Monday. The first bucket is widened back to a whole
       week or month, and the last one is the current, unfinished bucket.
     - Only meetings that have already started are counted.
@@ -468,8 +498,8 @@ ORDER BY
     - Times are in UTC.
     - The sync keeps about two years of meeting history by default, so
       buckets before that show zero.
-    - Colleague counts can add up to more than meeting_count. A meeting
-      that two colleagues attended counts once for each of them.
+    - Per-person counts can add up to more than meeting_count. A meeting
+      that two people attended counts once for each of them.
     --------------------------------------------------------------------- */
 
 WITH contact_addresses AS
@@ -511,23 +541,46 @@ contact_meetings AS
       )
 ),
 
-colleague_attendance AS
+our_domains AS
 (
-    -- One row per (meeting, colleague) for the colleagues on each meeting
+    -- Our firm's email domains, taken from our colleagues' addresses
+    SELECT DISTINCT
+        SUBSTRING(colleague.email_address, CHARINDEX('@', colleague.email_address) + 1, 256) AS domain
+    FROM dbo.colleague AS colleague
+    WHERE colleague.team_number = @TeamNumber
+      AND colleague.email_address LIKE '%@%'
+),
+
+attendance AS
+(
+    -- One row per (meeting, person) for everyone on the contact's meetings,
+    -- the contact included, each labelled colleague, internal or external
     SELECT
         meeting.meeting_id,
         meeting.start_date_time,
-        colleague.colleague_id,
-        COALESCE(colleague.name, colleague.email_address) AS colleague_name
+        CASE
+            WHEN colleague.colleague_id IS NOT NULL THEN 'colleague'
+            WHEN our_domains.domain     IS NOT NULL THEN 'internal'
+            ELSE                                         'external'
+        END AS participant_type,
+
+        -- Email address where there is one, otherwise the name
+        COALESCE(participant.email_address, colleague.name, participant.display_name) AS person
     FROM contact_meetings AS meeting
         JOIN dbo.meeting_participants AS participant
             ON  participant.team_number = @TeamNumber
             AND participant.meeting_id  = meeting.meeting_id
             AND ISNULL(participant.is_deleted, 0) = 0
-        JOIN dbo.colleague AS colleague
+
+        -- Is this person one of our colleagues?
+        LEFT JOIN dbo.colleague AS colleague
             ON  colleague.team_number   = participant.team_number
             AND colleague.email_address = participant.email_address
             AND ISNULL(colleague.is_deleted, 0) = 0
+
+        -- If not, are they at one of our domains?
+        LEFT JOIN our_domains
+            ON our_domains.domain = SUBSTRING(participant.email_address, CHARINDEX('@', participant.email_address) + 1, 256)
 ),
 
 first_bucket AS
@@ -572,7 +625,9 @@ buckets AS
 SELECT
     buckets.bucket_start,
     meetings.meeting_count,
-    colleagues.names                AS colleagues
+    people.colleagues,
+    people.internal_participants,
+    people.external_participants
 
 FROM buckets
 
@@ -586,29 +641,39 @@ FROM buckets
           AND meeting.start_date_time <  buckets.bucket_end
     ) AS meetings
 
-    -- Who attended, most frequent first: "Alice (3), Bob (2)"
+    -- Who attended, as one list per participant type.
+    -- STRING_AGG skips NULLs, so each CASE keeps only its own type.
     OUTER APPLY
     (
         SELECT
-            -- nvarchar(max) so a long list doesn't hit STRING_AGG's 8,000-byte limit
-            STRING_AGG(
-                CONCAT(CAST(per_colleague.colleague_name AS nvarchar(max)), ' (', per_colleague.meeting_count, ')'),
-                ', ')
-                WITHIN GROUP (ORDER BY per_colleague.meeting_count DESC, per_colleague.colleague_name)
-                AS names
+            STRING_AGG(CASE WHEN per_person.participant_type = 'colleague' THEN per_person.label END, ', ')
+                WITHIN GROUP (ORDER BY per_person.meeting_count DESC, per_person.person)
+                AS colleagues,
+
+            STRING_AGG(CASE WHEN per_person.participant_type = 'internal'  THEN per_person.label END, ', ')
+                WITHIN GROUP (ORDER BY per_person.meeting_count DESC, per_person.person)
+                AS internal_participants,
+
+            STRING_AGG(CASE WHEN per_person.participant_type = 'external'  THEN per_person.label END, ', ')
+                WITHIN GROUP (ORDER BY per_person.meeting_count DESC, per_person.person)
+                AS external_participants
         FROM
         (
+            -- One entry per person in the bucket, labelled "email (meetings)".
+            -- nvarchar(max) so long lists don't hit STRING_AGG's 8,000-byte limit.
             SELECT
-                attendance.colleague_name,
-                COUNT(*) AS meeting_count
-            FROM colleague_attendance AS attendance
+                attendance.participant_type,
+                attendance.person,
+                COUNT(*) AS meeting_count,
+                CONCAT(CAST(attendance.person AS nvarchar(max)), ' (', COUNT(*), ')') AS label
+            FROM attendance
             WHERE attendance.start_date_time >= buckets.bucket_start
               AND attendance.start_date_time <  buckets.bucket_end
             GROUP BY
-                attendance.colleague_id,
-                attendance.colleague_name
-        ) AS per_colleague
-    ) AS colleagues
+                attendance.participant_type,
+                attendance.person
+        ) AS per_person
+    ) AS people
 
 ORDER BY
     buckets.bucket_start
@@ -622,6 +687,7 @@ OPTION (MAXRECURSION 1000);
 
     The same as Query 7, but for a company. A meeting counts if anyone on
     the participant list belongs to one of the company's websites.
+    external_participants includes the company's own people.
     The bucket rules in Query 7 apply here too.
     --------------------------------------------------------------------- */
 
@@ -663,23 +729,47 @@ company_meetings AS
       )
 ),
 
-colleague_attendance AS
+our_domains AS
 (
-    -- One row per (meeting, colleague) for the colleagues on each meeting
+    -- Our firm's email domains, taken from our colleagues' addresses
+    SELECT DISTINCT
+        SUBSTRING(colleague.email_address, CHARINDEX('@', colleague.email_address) + 1, 256) AS domain
+    FROM dbo.colleague AS colleague
+    WHERE colleague.team_number = @TeamNumber
+      AND colleague.email_address LIKE '%@%'
+),
+
+attendance AS
+(
+    -- One row per (meeting, person) for everyone on the company's meetings,
+    -- the company's own people included, each labelled colleague, internal
+    -- or external
     SELECT
         meeting.meeting_id,
         meeting.start_date_time,
-        colleague.colleague_id,
-        COALESCE(colleague.name, colleague.email_address) AS colleague_name
+        CASE
+            WHEN colleague.colleague_id IS NOT NULL THEN 'colleague'
+            WHEN our_domains.domain     IS NOT NULL THEN 'internal'
+            ELSE                                         'external'
+        END AS participant_type,
+
+        -- Email address where there is one, otherwise the name
+        COALESCE(participant.email_address, colleague.name, participant.display_name) AS person
     FROM company_meetings AS meeting
         JOIN dbo.meeting_participants AS participant
             ON  participant.team_number = @TeamNumber
             AND participant.meeting_id  = meeting.meeting_id
             AND ISNULL(participant.is_deleted, 0) = 0
-        JOIN dbo.colleague AS colleague
+
+        -- Is this person one of our colleagues?
+        LEFT JOIN dbo.colleague AS colleague
             ON  colleague.team_number   = participant.team_number
             AND colleague.email_address = participant.email_address
             AND ISNULL(colleague.is_deleted, 0) = 0
+
+        -- If not, are they at one of our domains?
+        LEFT JOIN our_domains
+            ON our_domains.domain = SUBSTRING(participant.email_address, CHARINDEX('@', participant.email_address) + 1, 256)
 ),
 
 first_bucket AS
@@ -724,7 +814,9 @@ buckets AS
 SELECT
     buckets.bucket_start,
     meetings.meeting_count,
-    colleagues.names                AS colleagues
+    people.colleagues,
+    people.internal_participants,
+    people.external_participants
 
 FROM buckets
 
@@ -738,29 +830,39 @@ FROM buckets
           AND meeting.start_date_time <  buckets.bucket_end
     ) AS meetings
 
-    -- Who attended, most frequent first: "Alice (3), Bob (2)"
+    -- Who attended, as one list per participant type.
+    -- STRING_AGG skips NULLs, so each CASE keeps only its own type.
     OUTER APPLY
     (
         SELECT
-            -- nvarchar(max) so a long list doesn't hit STRING_AGG's 8,000-byte limit
-            STRING_AGG(
-                CONCAT(CAST(per_colleague.colleague_name AS nvarchar(max)), ' (', per_colleague.meeting_count, ')'),
-                ', ')
-                WITHIN GROUP (ORDER BY per_colleague.meeting_count DESC, per_colleague.colleague_name)
-                AS names
+            STRING_AGG(CASE WHEN per_person.participant_type = 'colleague' THEN per_person.label END, ', ')
+                WITHIN GROUP (ORDER BY per_person.meeting_count DESC, per_person.person)
+                AS colleagues,
+
+            STRING_AGG(CASE WHEN per_person.participant_type = 'internal'  THEN per_person.label END, ', ')
+                WITHIN GROUP (ORDER BY per_person.meeting_count DESC, per_person.person)
+                AS internal_participants,
+
+            STRING_AGG(CASE WHEN per_person.participant_type = 'external'  THEN per_person.label END, ', ')
+                WITHIN GROUP (ORDER BY per_person.meeting_count DESC, per_person.person)
+                AS external_participants
         FROM
         (
+            -- One entry per person in the bucket, labelled "email (meetings)".
+            -- nvarchar(max) so long lists don't hit STRING_AGG's 8,000-byte limit.
             SELECT
-                attendance.colleague_name,
-                COUNT(*) AS meeting_count
-            FROM colleague_attendance AS attendance
+                attendance.participant_type,
+                attendance.person,
+                COUNT(*) AS meeting_count,
+                CONCAT(CAST(attendance.person AS nvarchar(max)), ' (', COUNT(*), ')') AS label
+            FROM attendance
             WHERE attendance.start_date_time >= buckets.bucket_start
               AND attendance.start_date_time <  buckets.bucket_end
             GROUP BY
-                attendance.colleague_id,
-                attendance.colleague_name
-        ) AS per_colleague
-    ) AS colleagues
+                attendance.participant_type,
+                attendance.person
+        ) AS per_person
+    ) AS people
 
 ORDER BY
     buckets.bucket_start
@@ -773,15 +875,16 @@ OPTION (MAXRECURSION 1000);
     Query 9: Meetings with a contact over time, per colleague (for charts)
 
     One row per (bucket, colleague), with the number of the contact's
-    meetings that colleague attended in that bucket. In Excel or Power BI,
-    put bucket_start on the axis and colleague_name in the legend to get
-    a stacked bar per bucket.
+    meetings that colleague attended in that bucket. Colleagues are shown
+    by email address, or by name when there is no address. In Excel or
+    Power BI, put bucket_start on the axis and colleague in the legend to
+    get a stacked bar per bucket.
 
     - The bucket rules in Query 7 apply here too.
     - The stacked total is colleague attendances, not meetings. A meeting
       two colleagues attended counts once for each of them, so label the
       axis accordingly. Query 7 has the true meeting count.
-    - A bucket with no meetings appears once, with an empty colleague_name
+    - A bucket with no meetings appears once, with an empty colleague
       and a count of zero, so the time axis has no gaps.
     --------------------------------------------------------------------- */
 
@@ -831,7 +934,9 @@ colleague_attendance AS
         meeting.meeting_id,
         meeting.start_date_time,
         colleague.colleague_id,
-        COALESCE(colleague.name, colleague.email_address) AS colleague_name
+
+        -- Email address where there is one, otherwise the name
+        COALESCE(colleague.email_address, colleague.name) AS colleague
     FROM contact_meetings AS meeting
         JOIN dbo.meeting_participants AS participant
             ON  participant.team_number = @TeamNumber
@@ -884,7 +989,7 @@ buckets AS
 
 SELECT
     buckets.bucket_start,
-    attendance.colleague_name,
+    attendance.colleague,
     COUNT(attendance.meeting_id)    AS meeting_count
 
 FROM buckets
@@ -897,7 +1002,7 @@ FROM buckets
 GROUP BY
     buckets.bucket_start,
     attendance.colleague_id,
-    attendance.colleague_name
+    attendance.colleague
 
 ORDER BY
     buckets.bucket_start,
@@ -960,7 +1065,9 @@ colleague_attendance AS
         meeting.meeting_id,
         meeting.start_date_time,
         colleague.colleague_id,
-        COALESCE(colleague.name, colleague.email_address) AS colleague_name
+
+        -- Email address where there is one, otherwise the name
+        COALESCE(colleague.email_address, colleague.name) AS colleague
     FROM company_meetings AS meeting
         JOIN dbo.meeting_participants AS participant
             ON  participant.team_number = @TeamNumber
@@ -1013,7 +1120,7 @@ buckets AS
 
 SELECT
     buckets.bucket_start,
-    attendance.colleague_name,
+    attendance.colleague,
     COUNT(attendance.meeting_id)    AS meeting_count
 
 FROM buckets
@@ -1026,7 +1133,7 @@ FROM buckets
 GROUP BY
     buckets.bucket_start,
     attendance.colleague_id,
-    attendance.colleague_name
+    attendance.colleague
 
 ORDER BY
     buckets.bucket_start,
